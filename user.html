@@ -1022,6 +1022,96 @@
             background: rgba(239, 68, 68, 0.05);
         }
 
+        /* --- IN-APP TOAST NOTIFICATION --- */
+        .toast {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-specular);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            padding: 14px 24px;
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 32px var(--card-shadow);
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 300ms ease, visibility 300ms ease, transform 300ms ease;
+            white-space: nowrap;
+            max-width: 80vw;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* --- PREFERENCES STEP ANIMATIONS --- */
+        .pref-step {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 250ms ease, transform 250ms ease;
+        }
+        .pref-step.hide {
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+            position: absolute;
+            width: calc(100% - 48px);
+        }
+        .pref-step.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            position: relative;
+            width: auto;
+        }
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background var(--fade-speed) ease;
+        }
+        .day-header:active {
+            background: rgba(255,255,255,0.04);
+        }
+        .day-header .arrow-icon {
+            transition: transform 300ms ease;
+        }
+        .day-header.open .arrow-icon {
+            transform: rotate(180deg);
+        }
+        .day-meals {
+            display: none;
+            padding: 0 12px 10px 60px;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .day-meals.open {
+            display: flex;
+        }
+        .day-meals > div {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .day-meals > div:last-child {
+            border-bottom: none;
+        }
+
         /* --- PREFERENCES POPUP FORM ENGINE --- */
         .pill-box {
             display: flex;
@@ -1194,7 +1284,7 @@
                     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
                 </div>
                 <div class="meta-text">
-                    <h1 id="header-username">Hi, Abdul</h1>
+                    <h1 id="header-username" style="display:flex; align-items:center; gap:8px;"><span id="header-username-text">Hi, Abdul</span> <span id="absent-badge" style="display:none; font-size:11px; font-weight:700; color:#ef4444; background:rgba(239,68,68,0.12); padding:2px 8px; border-radius:8px;">Absent</span></h1>
                     <p id="header-role">User</p>
                 </div>
             </div>
@@ -1244,6 +1334,25 @@
                         <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                     </div>
                 </div>
+
+                <!-- Unavailable Today Trigger -->
+                <div class="glass-card card-pressable" id="unavailable-today-trigger">
+                    <div class="icon-wrap">
+                        <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+                    </div>
+                    <h3 class="card-title" id="lbl-unavailable">I won't be available</h3>
+                    <div class="card-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+
+                <!-- Clear All Unavailability Trigger (shown only when an absence is set) -->
+                <div class="glass-card card-pressable" id="clear-unavailability-trigger" style="display: none; align-items:center; justify-content:center;">
+                    <div class="icon-wrap" style="margin: 0 auto 6px;">
+                        <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </div>
+                    <h3 class="card-title" id="lbl-clear-unavailability" style="text-align:center; color:#ef4444;">Clear all unavailability</h3>
+                </div>
             </div>
 
             <!-- Full Width Tracking Strip -->
@@ -1258,45 +1367,6 @@
                 <div class="status-eta">
                     <span id="lbl-eta-tag">Estimated Arrival</span>
                     <time>9:45 AM</time>
-                </div>
-            </div>
-
-            <!-- Weekly Meal Schedule Preview -->
-            <div class="glass-card" style="margin-top:16px; padding: 20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h4 style="font-size:15px; font-weight:700;">This Week's Schedule</h4>
-                    <span style="font-size:12px; color:var(--accent); font-weight:600;">June 2026</span>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; flex-shrink:0;">M</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600;">Rice · Spinach · Chicken</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
-                        <span style="font-size:11px; font-weight:700; color:#22c55e; background:rgba(34,197,94,0.1); padding:3px 8px; border-radius:8px;">Today</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">T</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Nasi Goreng · Egg · Tofu</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">W</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Ayam Bakar · Rice · Salad</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">T</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Soto Ayam · Chappathi</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">F</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Rendang · Rice · Beans</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">Sa</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Pancake · Omelette · Juice</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Brunch 10:00 AM</div></div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">Su</div>
-                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Biriyani · Raita · Salad</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 1:00 PM</div></div>
-                    </div>
                 </div>
             </div>
 
@@ -1489,6 +1559,9 @@
 
     </div>
 
+    <!-- --- IN-APP TOAST --- -->
+    <div class="toast" id="app-toast"></div>
+
     <!-- --- GLOBAL POPUPS OVERLAY WRAPPERS --- -->
     <div class="overlay-blur" id="popup-overlay-container">
         
@@ -1501,8 +1574,8 @@
                 </div>
             </div>
             <div class="modal-actions-list">
-                <button class="action-option-btn" onclick="triggerHardwareInput('camera')" id="opt-cam">Camera</button>
-                <button class="action-option-btn" onclick="triggerHardwareInput('gallery')" id="opt-gal">Gallery</button>
+                <button class="action-option-btn" onclick="window._mediaSource='profile';triggerHardwareInput('camera')" id="opt-cam">Camera</button>
+                <button class="action-option-btn" onclick="window._mediaSource='profile';triggerHardwareInput('gallery')" id="opt-gal">Gallery</button>
                 <button class="action-option-btn" style="color:#ef4444;" onclick="closeActiveModal()" id="opt-can">Cancel</button>
             </div>
         </div>
@@ -1510,40 +1583,75 @@
         <!-- Food Preferences Selector Configurator -->
         <div class="glass-card modal-sheet" id="modal-preferences" style="display: none;">
             <div class="modal-header">
-                <h3 id="pop-title-pref">Preferences</h3>
+                <h3 id="pop-title-pref">Meal Preferences</h3>
                 <div class="modal-close" onclick="closeActiveModal()">
                     <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </div>
             </div>
-            <div class="pill-box">
-                <div class="pill-btn active" onclick="togglePrefPill('veg', this)">Veg</div>
-                <div class="pill-btn" onclick="togglePrefPill('nonveg', this)">Non-Veg</div>
-                <div class="pill-btn" onclick="togglePrefPill('nonmeat', this)">Non-Meat</div>
-            </div>
-            
-            <!-- Veg Options Stack -->
-            <div class="dropdown-grid active" id="grid-pref-veg">
-                <div class="select-field-wrap"><label>Veg-1</label><select class="glass-select"><option>Rice</option><option>Porridge</option></select></div>
-                <div class="select-field-wrap"><label>Veg-2</label><select class="glass-select"><option>Spinach</option><option>Salad</option></select></div>
-                <div class="select-field-wrap"><label>Veg-3</label><select class="glass-select"><option>Beans</option><option>Lentils</option></select></div>
-                <div class="select-field-wrap"><label>Veg-4</label><select class="glass-select"><option>Chappathi</option><option>Roti</option></select></div>
-            </div>
-            <!-- Non-Veg Options Stack -->
-            <div class="dropdown-grid" id="grid-pref-nonveg">
-                <div class="select-field-wrap"><label>Non-Veg-1</label><select class="glass-select"><option>Chicken Rice</option><option>Biryani</option></select></div>
-                <div class="select-field-wrap"><label>Non-Veg-2</label><select class="glass-select"><option>Fried Chicken</option><option>Beef Curry</option></select></div>
-                <div class="select-field-wrap"><label>Non-Veg-3</label><select class="glass-select"><option>Egg Roast</option><option>Omelette</option></select></div>
-                <div class="select-field-wrap"><label>Non-Veg-4</label><select class="glass-select"><option>Parotta</option><option>Naan</option></select></div>
-            </div>
-            <!-- Non-Meat Options Stack -->
-            <div class="dropdown-grid" id="grid-pref-nonmeat">
-                <div class="select-field-wrap"><label>Non-Meat-1</label><select class="glass-select"><option>Fish Rice</option><option>Ghee Rice</option></select></div>
-                <div class="select-field-wrap"><label>Non-Meat-2</label><select class="glass-select"><option>Fish Fry</option><option>Prawn Masala</option></select></div>
-                <div class="select-field-wrap"><label>Non-Meat-3</label><select class="glass-select"><option>Egg Scramble</option><option>Mushroom</option></select></div>
-                <div class="select-field-wrap"><label>Non-Meat-4</label><select class="glass-select"><option>Appam</option><option>Idiyappam</option></select></div>
+
+            <!-- Step 1: Pick meal type -->
+            <div id="pref-step-meal" class="pref-step show">
+                <div class="modal-actions-list">
+                    <button class="action-option-btn" onclick="pickMealType('breakfast')" style="display:flex; align-items:center; gap:12px; padding:16px;">
+                        <div style="width:40px;height:40px;border-radius:12px;background:#f59e0b;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg style="width:20px;height:20px;fill:white;" viewBox="0 0 24 24"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>
+                        </div>
+                        <div style="flex:1;text-align:left;"><div style="font-size:15px;">Breakfast</div><div style="font-size:12px;color:var(--text-muted);font-weight:500;">Morning meals</div></div>
+                        <svg style="width:18px;height:18px;fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </button>
+                    <button class="action-option-btn" onclick="pickMealType('lunch')" style="display:flex; align-items:center; gap:12px; padding:16px;">
+                        <div style="width:40px;height:40px;border-radius:12px;background:#22c55e;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg style="width:20px;height:20px;fill:white;" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7z"/></svg>
+                        </div>
+                        <div style="flex:1;text-align:left;"><div style="font-size:15px;">Lunch</div><div style="font-size:12px;color:var(--text-muted);font-weight:500;">Midday meals</div></div>
+                        <svg style="width:18px;height:18px;fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </button>
+                    <button class="action-option-btn" onclick="pickMealType('dinner')" style="display:flex; align-items:center; gap:12px; padding:16px;">
+                        <div style="width:40px;height:40px;border-radius:12px;background:#3b82f6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg style="width:20px;height:20px;fill:white;" viewBox="0 0 24 24"><path d="M16 6l-1.5 1.5L15.5 9l-2 2L14 12.5l-3 3L9.5 10.5l-8 8 1.5 1.5 8-8L13 17l3-3 1.5 1.5L19 14l-1.5-1.5L19 11l-1.5-1.5L16 6z"/></svg>
+                        </div>
+                        <div style="flex:1;text-align:left;"><div style="font-size:15px;">Dinner</div><div style="font-size:12px;color:var(--text-muted);font-weight:500;">Evening meals</div></div>
+                        <svg style="width:18px;height:18px;fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </button>
+                </div>
             </div>
 
-            <button class="submit-action-btn" onclick="submitPreferencesForm()" id="btn-submit-pref">Submit</button>
+            <!-- Step 2: Veg/Non-Veg preferences (hidden initially) -->
+            <div id="pref-step-detail" class="pref-step hide">
+                <button class="action-option-btn" onclick="backToMealTypes()" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px;">
+                    <svg style="width:18px;height:18px;fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    <span style="font-size:14px;">Back</span>
+                </button>
+
+                <h4 id="pref-detail-title" style="font-size:15px;font-weight:700;margin-bottom:12px;"></h4>
+
+                <div class="pill-box">
+                    <div class="pill-btn active" onclick="togglePrefPill('veg', this)">Veg</div>
+                    <div class="pill-btn" onclick="togglePrefPill('nonveg', this)">Non-Veg</div>
+                    <div class="pill-btn" onclick="togglePrefPill('nonmeat', this)">Non-Meat</div>
+                </div>
+                
+                <div class="dropdown-grid active" id="grid-pref-veg">
+                    <div class="select-field-wrap"><label>Veg-1</label><select class="glass-select"><option>Rice</option><option>Porridge</option></select></div>
+                    <div class="select-field-wrap"><label>Veg-2</label><select class="glass-select"><option>Spinach</option><option>Salad</option></select></div>
+                    <div class="select-field-wrap"><label>Veg-3</label><select class="glass-select"><option>Beans</option><option>Lentils</option></select></div>
+                    <div class="select-field-wrap"><label>Veg-4</label><select class="glass-select"><option>Chappathi</option><option>Roti</option></select></div>
+                </div>
+                <div class="dropdown-grid" id="grid-pref-nonveg">
+                    <div class="select-field-wrap"><label>Non-Veg-1</label><select class="glass-select"><option>Chicken Rice</option><option>Biryani</option></select></div>
+                    <div class="select-field-wrap"><label>Non-Veg-2</label><select class="glass-select"><option>Fried Chicken</option><option>Beef Curry</option></select></div>
+                    <div class="select-field-wrap"><label>Non-Veg-3</label><select class="glass-select"><option>Egg Roast</option><option>Omelette</option></select></div>
+                    <div class="select-field-wrap"><label>Non-Veg-4</label><select class="glass-select"><option>Parotta</option><option>Naan</option></select></div>
+                </div>
+                <div class="dropdown-grid" id="grid-pref-nonmeat">
+                    <div class="select-field-wrap"><label>Non-Meat-1</label><select class="glass-select"><option>Fish Rice</option><option>Ghee Rice</option></select></div>
+                    <div class="select-field-wrap"><label>Non-Meat-2</label><select class="glass-select"><option>Fish Fry</option><option>Prawn Masala</option></select></div>
+                    <div class="select-field-wrap"><label>Non-Meat-3</label><select class="glass-select"><option>Egg Scramble</option><option>Mushroom</option></select></div>
+                    <div class="select-field-wrap"><label>Non-Meat-4</label><select class="glass-select"><option>Appam</option><option>Idiyappam</option></select></div>
+                </div>
+
+                <button class="submit-action-btn" onclick="submitPreferencesForm()" id="btn-submit-pref">Save</button>
+            </div>
         </div>
 
         <!-- Special Event Booking Ledger Sheets -->
@@ -1591,6 +1699,30 @@
                 <!-- System looks for QR.png in matching repository directory -->
                 <img src="QR.png" class="qr-image" alt="Payment QR Code" onerror="handleQRError(this)">
             </div>
+            <div id="payment-status-section" style="margin-top:16px;"></div>
+        </div>
+
+        <!-- Payment Proof Upload Sheet -->
+        <div class="glass-card modal-sheet" id="modal-payment-proof" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-payment-proof">Submit Payment Proof</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div class="form-stack" style="margin-bottom:0;">
+                <div class="input-group">
+                    <label>Receipt or Photo Evidence</label>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-option-btn" onclick="window._mediaSource='payment';triggerHardwareInput('camera')" style="flex:1; text-align:center; padding:12px;">Camera</button>
+                        <button class="action-option-btn" onclick="window._mediaSource='payment';triggerHardwareInput('gallery')" style="flex:1; text-align:center; padding:12px;">Gallery</button>
+                    </div>
+                    <div id="payment-proof-preview" style="display:none; margin-top:8px;">
+                        <img id="payment-proof-image" style="width:100%; border-radius:12px; max-height:180px; object-fit:cover;">
+                    </div>
+                </div>
+                <button class="submit-action-btn" onclick="submitPaymentProof()" id="btn-submit-payment-proof">Submit for Approval</button>
+            </div>
         </div>
 
         <!-- My Orders Populated Log Display Frame -->
@@ -1606,6 +1738,51 @@
             </div>
         </div>
 
+        <!-- Unavailability Flow Modal -->
+        <div class="glass-card modal-sheet" id="modal-absent" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-absent">I won't be available</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+
+            <!-- Step 1: Choice -->
+            <div id="absent-step-choice">
+                <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">How would you like to mark your unavailability?</p>
+                <div class="modal-actions-list">
+                    <button class="action-option-btn" style="color:#ef4444; text-align:center;" onclick="markAbsentToday()">Remove this day only</button>
+                    <button class="action-option-btn" style="text-align:center;" onclick="showAbsentStep('calendar')">Choose dates</button>
+                    <button class="action-option-btn" style="text-align:center;" onclick="closeActiveModal()">Cancel</button>
+                </div>
+
+                <div class="drawer-row" style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                    <span class="drawer-label">I'm absent every Sunday</span>
+                    <div class="toggle-switch" id="absent-sunday-toggle" onclick="toggleAbsentSundays()">
+                        <div class="toggle-handle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Date Range -->
+            <div id="absent-step-calendar" style="display:none;">
+                <div class="form-stack">
+                    <div class="input-group">
+                        <label>From</label>
+                        <input type="date" class="glass-input" id="absent-date-from">
+                    </div>
+                    <div class="input-group">
+                        <label>To</label>
+                        <input type="date" class="glass-input" id="absent-date-to">
+                    </div>
+                </div>
+                <div class="modal-actions-list" style="margin-top: 16px;">
+                    <button class="action-option-btn" style="color:#ef4444; text-align:center;" onclick="confirmAbsentDate()">Confirm</button>
+                    <button class="action-option-btn" style="text-align:center;" onclick="showAbsentStep('choice')">Back</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Report a Problem Sheet -->
         <div class="glass-card modal-sheet" id="modal-report" style="display: none;">
             <div class="modal-header">
@@ -1618,8 +1795,8 @@
                 <div class="input-group">
                     <label id="lbl-report-photo">Attach Photo</label>
                     <div style="display:flex; gap:10px;">
-                        <button class="action-option-btn" onclick="triggerHardwareInput('camera')" style="flex:1; text-align:center; padding:12px;">Camera</button>
-                        <button class="action-option-btn" onclick="triggerHardwareInput('gallery')" style="flex:1; text-align:center; padding:12px;">Gallery</button>
+                        <button class="action-option-btn" onclick="window._mediaSource='report';triggerHardwareInput('camera')" style="flex:1; text-align:center; padding:12px;">Camera</button>
+                        <button class="action-option-btn" onclick="window._mediaSource='report';triggerHardwareInput('gallery')" style="flex:1; text-align:center; padding:12px;">Gallery</button>
                     </div>
                     <div id="report-preview" style="display:none; margin-top:8px;">
                         <img id="report-image-preview" style="width:100%; border-radius:12px; max-height:180px; object-fit:cover;">
@@ -1687,6 +1864,7 @@
                 delivTitle: "We are delivering your order", delivDesc: "Please wait while we deliver your order",
                 etaTag: "Estimated Arrival", totalExp: "Total Expenses", unpaidBill: "Unpaid Payments",
                 tapPay: "Tap to view QR", breakdown: "Expense Breakdown", askHold: "Ask anything...",
+                pendingApproval: "Pending Approval",
                 navMe: "Me", navHistory: "History", navExpenses: "Expenses", navAi: "AI",
                 popPic: "Change Profile Picture?", optCam: "Camera", optGal: "Gallery", optCan: "Cancel",
                 popPref: "Preferences", btnSub: "Submit", popBook: "Book a Special Event",
@@ -1699,6 +1877,7 @@
                 delivTitle: "Kami sedang mengantar pesanan Anda", delivDesc: "Menyiapkan ruang kerja Anda",
                 etaTag: "Perkiraan Tiba", totalExp: "Total Pengeluaran", unpaidBill: "Pembayaran Belum Lunas",
                 tapPay: "Ketuk untuk melihat QR", breakdown: "Rincian Pengeluaran", askHold: "Tanyakan sesuatu...",
+                pendingApproval: "Menunggu Persetujuan",
                 navMe: "Saya", navHistory: "Riwayat", navExpenses: "Pengeluaran", navAi: "AI",
                 popPic: "Ubah Foto Profil?", optCam: "Kamera", optGal: "Galeri", optCan: "Batal",
                 popPref: "Preferensi", btnSub: "Kirim", popBook: "Pesan Acara Khusus",
@@ -1717,7 +1896,12 @@
             activeTab: "me",
             historySegment: "orders",
             bookingFoodType: "veg",
-            preferencesFoodPill: "veg"
+            preferencesFoodPill: "veg",
+            absent: false,
+            absenceRange: null,
+            absentSundays: false,
+            paymentStatus: "unpaid",
+            paymentProof: null
         };
 
         // Static Data Store arrays
@@ -1753,9 +1937,16 @@
             if(localStorage.getItem("role")) state.role = localStorage.getItem("role");
             if(localStorage.getItem("theme")) state.theme = localStorage.getItem("theme");
             if(localStorage.getItem("language")) state.lang = localStorage.getItem("language");
+            const savedFrom = localStorage.getItem("absenceRangeFrom");
+            const savedTo = localStorage.getItem("absenceRangeTo");
+            state.absenceRange = (savedFrom && savedTo) ? { from: savedFrom, to: savedTo } : null;
+            state.absentSundays = localStorage.getItem("absentSundays") === "true";
+            updateAbsenceUI();
+            state.paymentStatus = localStorage.getItem("paymentStatus") || "unpaid";
+            state.paymentProof = localStorage.getItem("paymentProof") || null;
 
             // Sync structural interfaces
-            document.getElementById("header-username").innerText = `Hi, ${state.user}`;
+            document.getElementById("header-username-text").innerText = `Hi, ${state.user}`;
             document.getElementById("header-role").innerText = state.role;
             
             // Set interface nodes
@@ -1784,6 +1975,7 @@
             document.getElementById("lbl-total-exp").innerText = strings.totalExp;
             document.getElementById("lbl-unpaid-bill").innerText = strings.unpaidBill;
             document.getElementById("lbl-tap-pay").innerText = strings.tapPay;
+            updatePaymentCardUI();
             document.getElementById("lbl-breakdown").innerText = strings.breakdown;
             
             // AI Chat
@@ -1851,11 +2043,21 @@
         // --- SYSTEM INTERACTIVE MODALS ENGINE MANAGER ---
         function openPopupModal(modalId) {
             const overlay = document.getElementById("popup-overlay-container");
-            // Hide all potential matching children cards first
             overlay.querySelectorAll(".modal-sheet").forEach(sheet => sheet.style.display = "none");
             
             document.getElementById(modalId).style.display = "block";
             overlay.classList.add("active");
+
+            if (modalId === "modal-preferences") {
+                const step1 = document.getElementById("pref-step-meal");
+                const step2 = document.getElementById("pref-step-detail");
+                step1.classList.remove("hide");
+                step1.classList.add("show");
+                step2.classList.remove("show");
+                step2.classList.add("hide");
+            }
+            if (modalId === "modal-absent") resetAbsentModal();
+            if (modalId === "modal-qr") renderPaymentStatus();
         }
 
         function closeActiveModal() {
@@ -1875,6 +2077,10 @@
             document.getElementById("event-card-trigger").addEventListener("click", () => openPopupModal("modal-booking"));
             document.getElementById("unpaid-card-trigger").addEventListener("click", () => openPopupModal("modal-qr"));
             document.getElementById("profile-img-trigger").addEventListener("click", () => openPopupModal("modal-profile"));
+            document.getElementById("unavailable-today-trigger").addEventListener("click", () => {
+                openPopupModal("modal-absent");
+            });
+            document.getElementById("clear-unavailability-trigger").addEventListener("click", clearAllUnavailability);
             
             // Settings Side Drawer triggers mapping
             document.getElementById("drawer-hamburger-trigger").addEventListener("click", () => {
@@ -1903,7 +2109,7 @@
 
         // --- HARDWARE MEDIA LINKING CHANNELS ---
         function triggerHardwareInput(sourceType) {
-            closeActiveModal();
+            if (window._mediaSource !== "report" && window._mediaSource !== "payment") closeActiveModal();
             if(sourceType === 'camera') {
                 document.getElementById("hardware-camera-portal").click();
             } else {
@@ -1918,17 +2124,23 @@
             const readerInstance = new FileReader();
             readerInstance.onload = function (e) {
                 const base64String = e.target.result;
-                const reportOverlay = document.getElementById("popup-overlay-container");
-                const reportModal = document.getElementById("modal-report");
-                if (reportOverlay.classList.contains("active") && reportModal.style.display === "block") {
+                if (window._mediaSource === "report") {
                     const preview = document.getElementById("report-preview");
                     const img = document.getElementById("report-image-preview");
                     img.src = base64String;
                     preview.style.display = "block";
+                    window._reportPhoto = base64String;
+                } else if (window._mediaSource === "payment") {
+                    const preview = document.getElementById("payment-proof-preview");
+                    const img = document.getElementById("payment-proof-image");
+                    img.src = base64String;
+                    preview.style.display = "block";
+                    window._paymentProof = base64String;
                 } else {
                     const avatarFrame = document.getElementById("avatar-frame");
                     avatarFrame.innerHTML = `<img src="${base64String}" alt="Profile Picture">`;
                 }
+                window._mediaSource = null;
             };
             readerInstance.readAsDataURL(fileAsset);
         }
@@ -1993,6 +2205,116 @@
             setTimeout(() => openPopupModal("modal-report"), 300);
         }
 
+        function toggleDay(el) {
+            const container = el.parentElement;
+            const meals = container.querySelector(".day-meals");
+            const isOpen = meals.classList.contains("open");
+            if (isOpen) {
+                meals.classList.remove("open");
+                el.classList.remove("open");
+            } else {
+                meals.classList.add("open");
+                el.classList.add("open");
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("app-toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 2500);
+        }
+
+        // --- UNAVAILABILITY (ABSENCE) FLOW ---
+        function showAbsentStep(step) {
+            const choiceEl = document.getElementById("absent-step-choice");
+            const calendarEl = document.getElementById("absent-step-calendar");
+            if (step === "calendar") {
+                choiceEl.style.display = "none";
+                calendarEl.style.display = "block";
+                const today = new Date().toISOString().split("T")[0];
+                const fromField = document.getElementById("absent-date-from");
+                const toField = document.getElementById("absent-date-to");
+                if (!fromField.value) fromField.value = today;
+                if (!toField.value) toField.value = today;
+            } else {
+                choiceEl.style.display = "block";
+                calendarEl.style.display = "none";
+            }
+        }
+
+        function resetAbsentModal() {
+            showAbsentStep("choice");
+            document.getElementById("absent-sunday-toggle").classList.toggle("active", !!state.absentSundays);
+        }
+
+        function toggleAbsentSundays() {
+            state.absentSundays = !state.absentSundays;
+            document.getElementById("absent-sunday-toggle").classList.toggle("active", state.absentSundays);
+            localStorage.setItem("absentSundays", state.absentSundays ? "true" : "false");
+            updateAbsenceUI();
+            showToast(state.absentSundays ? "You'll be marked unavailable every Sunday" : "Sunday unavailability removed");
+        }
+
+        function markAbsentToday() {
+            const today = new Date().toISOString().split("T")[0];
+            applyAbsenceRange(today, today);
+            closeActiveModal();
+            showToast("Marked as unavailable for today");
+        }
+
+        function confirmAbsentDate() {
+            const from = document.getElementById("absent-date-from").value;
+            const to = document.getElementById("absent-date-to").value;
+            if (!from || !to) {
+                showToast("Please select both dates");
+                return;
+            }
+            if (to < from) {
+                showToast("End date must be after the start date");
+                return;
+            }
+            applyAbsenceRange(from, to);
+            closeActiveModal();
+            const fmt = d => new Date(d + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+            showToast(from === to ? `Marked as unavailable on ${fmt(from)}` : `Marked as unavailable from ${fmt(from)} to ${fmt(to)}`);
+        }
+
+        function applyAbsenceRange(from, to) {
+            state.absenceRange = { from, to };
+            localStorage.setItem("absenceRangeFrom", from);
+            localStorage.setItem("absenceRangeTo", to);
+            updateAbsenceUI();
+        }
+
+        function clearAllUnavailability() {
+            state.absenceRange = null;
+            state.absentSundays = false;
+            localStorage.removeItem("absenceRangeFrom");
+            localStorage.removeItem("absenceRangeTo");
+            localStorage.removeItem("absentSundays");
+            updateAbsenceUI();
+            showToast("Unavailability cleared");
+        }
+
+        function isAbsentToday() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (state.absentSundays && today.getDay() === 0) return true;
+            if (state.absenceRange) {
+                const from = new Date(state.absenceRange.from + "T00:00:00");
+                const to = new Date(state.absenceRange.to + "T00:00:00");
+                if (today >= from && today <= to) return true;
+            }
+            return false;
+        }
+
+        function updateAbsenceUI() {
+            document.getElementById("absent-badge").style.display = isAbsentToday() ? "inline" : "none";
+            const hasUnavailability = !!state.absenceRange || !!state.absentSundays;
+            document.getElementById("clear-unavailability-trigger").style.display = hasUnavailability ? "flex" : "none";
+        }
+
         function submitReport() {
             const desc = document.getElementById("report-desc-field").value.trim();
             const preview = document.getElementById("report-preview");
@@ -2000,15 +2322,83 @@
             const hasPhoto = preview.style.display === "block" && img.src;
 
             if (!desc && !hasPhoto) {
-                alert(state.lang === "ID" ? "Harap isi deskripsi atau lampirkan foto." : "Please describe the problem or attach a photo.");
+                showToast(state.lang === "ID" ? "Isi deskripsi atau lampirkan foto." : "Please describe the problem or attach a photo.");
                 return;
             }
 
-            alert(state.lang === "ID" ? "Laporan terkirim! Terima kasih." : "Report sent! Thank you.");
+            showToast(state.lang === "ID" ? "Laporan terkirim!" : "Report sent! Thank you.");
             document.getElementById("report-desc-field").value = "";
             preview.style.display = "none";
             img.src = "";
+            window._reportPhoto = null;
             closeActiveModal();
+        }
+
+        // --- UNPAID PAYMENT / "I'VE PAID" PROOF FLOW ---
+        function renderPaymentStatus() {
+            const section = document.getElementById("payment-status-section");
+            if (state.paymentStatus === "pending") {
+                const note = state.lang === "ID"
+                    ? "Bukti pembayaran Anda telah dikirim dan sedang menunggu persetujuan dari pemilik."
+                    : "Your payment proof has been submitted and is awaiting approval from the owner.";
+                const resubmitLabel = state.lang === "ID" ? "Kirim Ulang Bukti" : "Resubmit Proof";
+                section.innerHTML = `
+                    <div class="glass-card" style="padding:14px; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); margin-top:0;">
+                        <p style="font-size:13px; font-weight:700; color:#f59e0b; margin-bottom:6px;">${state.lang === "ID" ? "Menunggu Persetujuan" : "Pending Approval"}</p>
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">${note}</p>
+                        ${state.paymentProof ? `<img src="${state.paymentProof}" style="width:100%; border-radius:12px; max-height:140px; object-fit:cover; margin-bottom:10px;">` : ""}
+                        <button class="action-option-btn" style="width:100%; text-align:center;" onclick="openPaymentProofModal()">${resubmitLabel}</button>
+                    </div>
+                `;
+            } else {
+                const label = state.lang === "ID" ? "Saya Sudah Bayar" : "I've Paid";
+                section.innerHTML = `<button class="submit-action-btn" onclick="openPaymentProofModal()" id="btn-ive-paid">${label}</button>`;
+            }
+        }
+
+        function openPaymentProofModal() {
+            const preview = document.getElementById("payment-proof-preview");
+            const img = document.getElementById("payment-proof-image");
+            preview.style.display = "none";
+            img.src = "";
+            window._paymentProof = null;
+            openPopupModal("modal-payment-proof");
+        }
+
+        function submitPaymentProof() {
+            if (!window._paymentProof) {
+                showToast(state.lang === "ID" ? "Lampirkan struk atau foto bukti pembayaran." : "Please attach a receipt or photo evidence.");
+                return;
+            }
+
+            state.paymentStatus = "pending";
+            state.paymentProof = window._paymentProof;
+            localStorage.setItem("paymentStatus", "pending");
+            try {
+                localStorage.setItem("paymentProof", state.paymentProof);
+            } catch (err) {
+                // Storage quota exceeded — keep proof in memory for this session only
+            }
+
+            document.getElementById("payment-proof-preview").style.display = "none";
+            document.getElementById("payment-proof-image").src = "";
+            window._paymentProof = null;
+
+            updatePaymentCardUI();
+            closeActiveModal();
+            showToast(state.lang === "ID" ? "Terkirim! Menunggu persetujuan pemilik." : "Submitted! Waiting for owner approval.");
+        }
+
+        function updatePaymentCardUI() {
+            const tapLabel = document.getElementById("lbl-tap-pay");
+            if (!tapLabel) return;
+            if (state.paymentStatus === "pending") {
+                tapLabel.innerText = dictionary[state.lang].pendingApproval;
+                tapLabel.style.color = "#f59e0b";
+            } else {
+                tapLabel.innerText = dictionary[state.lang].tapPay;
+                tapLabel.style.color = "var(--text-muted)";
+            }
         }
 
         function executeSystemLogout() {
@@ -2028,6 +2418,29 @@
         }
 
         // --- PREFERENCES INTERNAL MULTI PILL LOGIC ---
+        function pickMealType(type) {
+            const step1 = document.getElementById("pref-step-meal");
+            const step2 = document.getElementById("pref-step-detail");
+            step1.classList.remove("show");
+            step1.classList.add("hide");
+            requestAnimationFrame(() => {
+                step2.classList.remove("hide");
+                step2.classList.add("show");
+            });
+            document.getElementById("pref-detail-title").textContent = type.charAt(0).toUpperCase() + type.slice(1) + " Preferences";
+        }
+
+        function backToMealTypes() {
+            const step1 = document.getElementById("pref-step-meal");
+            const step2 = document.getElementById("pref-step-detail");
+            step2.classList.remove("show");
+            step2.classList.add("hide");
+            requestAnimationFrame(() => {
+                step1.classList.remove("hide");
+                step1.classList.add("show");
+            });
+        }
+
         function togglePrefPill(pillType, nodeRef) {
             const parentPillBox = nodeRef.parentNode;
             parentPillBox.querySelectorAll(".pill-btn").forEach(btn => btn.classList.remove("active"));
@@ -2044,8 +2457,8 @@
 
         function submitPreferencesForm() {
             closeActiveModal();
-            // Core functional reset as mapped by user blueprints
             setTimeout(() => {
+                backToMealTypes();
                 const pills = document.querySelectorAll("#modal-preferences .pill-btn");
                 togglePrefPill("veg", pills[0]);
             }, 500);
