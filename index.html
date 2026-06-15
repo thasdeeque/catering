@@ -64,11 +64,23 @@
     --shadow-light: rgba(255, 255, 255, 0.6);
   }
 
+  html {
+    /* Fills the status-bar gap on iOS PWA black-translucent mode */
+    background: #08060c;
+    height: 100%;
+  }
+  :root.light ~ * html,
+  html:has(.light) {
+    background: #e8e4f0;
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-gradient);
+    background-attachment: fixed;
     color: var(--text);
     min-height: 100dvh;
+    min-height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -76,6 +88,11 @@
     overflow: hidden;
     transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-tap-highlight-color: transparent;
+    /* Respect notch and home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* Vibrant fluid background blooms */
@@ -298,14 +315,27 @@
     font-size: 13px;
     font-weight: 500;
     margin-bottom: 18px;
-    display: none;
+    display: flex;
     align-items: center;
     gap: 8px;
     transform: translateY(-10px);
     opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .alert-banner.show { display: flex; transform: translateY(0); opacity: 1; }
+  .alert-banner.show { 
+    opacity: 1; 
+    visibility: visible;
+    transform: translateY(0); 
+    max-height: 60px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+  }
 
   /* Pure Liquid Amethyst Primary Button */
   .login-btn {
@@ -345,25 +375,29 @@
   .pin-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(5, 3, 8, 0.0); /* Animation controls base blur & paint */
+    background: rgba(5, 3, 8, 0.0);
     backdrop-filter: blur(0px) saturate(100%);
     -webkit-backdrop-filter: blur(0px) saturate(100%);
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     z-index: 100;
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     transition: background 0.5s cubic-bezier(0.32, 0.94, 0.6, 1), 
                 backdrop-filter 0.5s cubic-bezier(0.32, 0.94, 0.6, 1), 
-                opacity 0.4s cubic-bezier(0.32, 0.94, 0.6, 1);
+                opacity 0.4s cubic-bezier(0.32, 0.94, 0.6, 1),
+                visibility 0.4s cubic-bezier(0.32, 0.94, 0.6, 1);
     will-change: background, backdrop-filter, opacity;
   }
   :root.light .pin-overlay { background: rgba(240, 235, 245, 0.0); }
   
   /* Active Liquid Blur State */
   .pin-overlay.show { 
-    display: flex; 
     opacity: 1; 
+    visibility: visible;
+    pointer-events: auto;
     background: rgba(5, 3, 8, 0.45);
     backdrop-filter: blur(30px) saturate(210%);
     -webkit-backdrop-filter: blur(30px) saturate(210%);
@@ -385,6 +419,8 @@
   
   /* Dynamic exit sequence code */
   .pin-overlay.dismissing {
+    visibility: visible;
+    pointer-events: none;
     background: rgba(5, 3, 8, 0.0);
     backdrop-filter: blur(0px) saturate(100%);
     -webkit-backdrop-filter: blur(0px) saturate(100%);
@@ -439,15 +475,22 @@
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: var(--bg-gradient);
-    display: none;
+    background-attachment: fixed;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 200;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
   }
-  .loading-screen.show { display: flex; opacity: 1; }
+  .loading-screen.show { 
+    opacity: 1; 
+    visibility: visible;
+    pointer-events: auto;
+  }
   .loading-glass { padding: 40px 48px; text-align: center; }
   .loading-greeting { font-size: 30px; font-weight: 700; margin-bottom: 12px; opacity: 0; transform: translateY(15px); animation: fadeInUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
   .loading-text { font-size: 15px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; animation: fadeInUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.2s forwards; }
@@ -462,7 +505,6 @@
   @keyframes fluidShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .shake { animation: fluidShake 0.35s ease-in-out; }
 </style>
-<base target="_blank">
 </head>
 <body>
 
@@ -693,7 +735,6 @@ function showPinOverlay() {
   // Recede background viewport smoothly
   viewport.classList.add('recede');
   
-  overlay.style.display = 'flex';
   setTimeout(() => overlay.classList.add('show'), 20);
 }
 
@@ -706,10 +747,9 @@ function hidePinOverlay() {
   viewport.classList.remove('recede');
   
   setTimeout(() => {
-    overlay.style.display = 'none';
     overlay.classList.remove('dismissing');
     pinValue = ''; updatePinDots();
-  }, 500); // Perfect timing alignment with CSS key values
+  }, 500);
 }
 
 function pinInput(digit) {
@@ -744,7 +784,6 @@ function checkPin() {
 function showLoading() {
   const screen = document.getElementById('loadingScreen');
   document.getElementById('loadingGreeting').textContent = `Hi, ${currentUsername}`;
-  screen.style.display = 'flex';
   setTimeout(() => screen.classList.add('show'), 10);
 
   setTimeout(() => {
