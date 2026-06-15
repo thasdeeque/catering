@@ -1895,6 +1895,16 @@
         function executeSystemLogout() {
             localStorage.removeItem("role");
             localStorage.removeItem("username");
+            // Navigate the parent shell back to login — stays within PWA standalone
+            if (window.parent && window.parent !== window) {
+                const frame = window.parent.document.getElementById('appFrame');
+                if (frame) {
+                    frame.style.opacity = '0';
+                    frame.style.visibility = 'hidden';
+                    frame.src = '';
+                    return;
+                }
+            }
             window.location.href = "index.html";
         }
 
