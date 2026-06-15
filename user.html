@@ -107,32 +107,43 @@
             max-width: 680px;
             margin: 0 auto;
             position: relative;
-            padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px) + 12px);
-            /* Prevent overscroll */
             overflow: hidden;
+            /* No bottom padding — nav truly floats above, content scrolls under it */
         }
 
-        /* On iPad / large screens: wider layout, slightly more padding */
+        /* Tab panels get bottom padding so last item isn't hidden under the nav */
+        .tab-panel {
+            flex: 1;
+            padding: 0 24px;
+            /* Extra bottom padding = nav height + gap so last card clears the bar */
+            padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 32px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity var(--fade-speed) ease, transform var(--fade-speed) ease;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .tab-panel::-webkit-scrollbar { display: none; }
+
+        .tab-panel.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         @media (min-width: 768px) {
-            .app-container {
-                max-width: 720px;
-                padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px) + 16px);
-            }
-            .me-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            header {
-                padding: 32px 32px 24px;
-            }
-            .tab-panel {
-                padding: 0 32px;
-            }
+            .app-container { max-width: 720px; }
+            header { padding: 32px 32px 24px; }
+            .tab-panel { padding: 0 32px calc(64px + env(safe-area-inset-bottom, 0px) + 32px); }
+            nav.bottom-dock { max-width: 420px; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); }
         }
 
         @media (min-width: 1024px) {
-            .app-container {
-                max-width: 800px;
-            }
+            .app-container { max-width: 800px; }
         }
 
         /* --- HEADER ROW --- */
@@ -215,30 +226,6 @@
 
         .menu-btn:active {
             transform: scale(0.92);
-        }
-
-        /* --- CONTENT MAIN PANELS --- */
-        .tab-panel {
-            flex: 1;
-            padding: 0 24px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-            display: none;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity var(--fade-speed) ease, transform var(--fade-speed) ease;
-            /* Internal scroll, not full page */
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding-bottom: 16px;
-        }
-        .tab-panel::-webkit-scrollbar { display: none; }
-
-        .tab-panel.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
         }
 
         /* --- GLASS CARD SYSTEM --- */
@@ -701,36 +688,88 @@
         /* --- FLOATING ISLAND BOTTOM NAVIGATION DOCK --- */
         nav.bottom-dock {
             position: fixed;
-            /* Sit above gesture bar with elevation gap */
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
             left: 50%;
             transform: translateX(-50%);
-            /* Pill width: fits content, max capped for iPad */
-            width: calc(100% - 48px);
-            max-width: 420px;
-            height: 68px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-top: 1px solid var(--glass-specular);
-            backdrop-filter: blur(32px) saturate(200%);
-            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            width: calc(100% - 56px);
+            max-width: 380px;
+            height: 64px;
+            /* CSS fallback glass - shown if WebGL fails */
+            background: rgba(18, 14, 28, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(60px) saturate(240%);
+            -webkit-backdrop-filter: blur(60px) saturate(240%);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            z-index: 20;
-            /* Elevated pill shape */
-            border-radius: 28px;
+            z-index: 50;
+            border-radius: 32px;
             box-shadow: 
-                0 8px 32px rgba(0,0,0,0.35),
-                0 2px 8px rgba(0,0,0,0.2),
-                inset 0 1px 0 var(--glass-specular);
-            padding: 0 8px;
+                0 20px 60px rgba(0, 0, 0, 0.55),
+                0 4px 16px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 0 6px;
+            /* When WebGL is active, nav background becomes transparent */
+            transition: background 0.3s ease;
+        }
+
+        nav.bottom-dock.gl-active {
+            background: transparent;
+            border-color: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: none;
+        }
+
+        /* Solid frosted capsule sitting behind the nav for extra opacity/blur */
+        .nav-backdrop {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 56px);
+            max-width: 380px;
+            height: 64px;
+            border-radius: 32px;
+            background: rgba(10, 8, 16, 0.55);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            z-index: 48;
+            pointer-events: none;
+        }
+
+        [data-theme="light"] .nav-backdrop {
+            background: rgba(255, 255, 255, 0.45);
+        }
+
+        @media (min-width: 768px) {
+            .nav-backdrop {
+                max-width: 420px;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+            }
+        }
+
+        [data-theme="light"] nav.bottom-dock {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(124, 58, 237, 0.12);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(60px) saturate(240%);
+            -webkit-backdrop-filter: blur(60px) saturate(240%);
+            box-shadow: 
+                0 20px 60px rgba(40, 30, 60, 0.18),
+                0 4px 16px rgba(40, 30, 60, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
 
         @media (min-width: 768px) {
             nav.bottom-dock {
-                max-width: 460px;
-                bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+                max-width: 420px;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+            }
+            #nav-gl-canvas {
+                max-width: 420px;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
             }
         }
 
@@ -1414,8 +1453,25 @@
             </div>
         </main>
 
-        <!-- --- FIXED BOTTOM NAVIGATION DOCK --- */ -->
-        <nav class="bottom-dock">
+        <!-- Solid frosted capsule behind the nav for extra blur/opacity -->
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <!-- --- LIQUID GLASS BOTTOM NAVIGATION DOCK --- -->
+        <!-- Canvas sits behind, WebGL renders the liquid glass effect -->
+        <canvas id="nav-gl-canvas" style="
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 56px);
+            max-width: 380px;
+            height: 64px;
+            border-radius: 32px;
+            z-index: 49;
+            pointer-events: none;
+        "></canvas>
+
+        <nav class="bottom-dock" id="main-nav">
             <button class="nav-item active" onclick="switchTab('me', this)">
                 <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
                 <span id="nav-me">Me</span>
@@ -2070,6 +2126,295 @@
             const container = document.getElementById("chat-msg-viewport");
             container.scrollTop = container.scrollHeight;
         }
+    </script>
+
+    <!-- ============================================================
+         LIQUID GLASS NAV — WebGL refraction shader
+         Falls back silently to CSS glass if WebGL unavailable
+    ============================================================ -->
+    <script>
+    (function() {
+        const canvas = document.getElementById('nav-gl-canvas');
+        const nav = document.getElementById('main-nav');
+        if (!canvas) return;
+
+        // Try to get WebGL context
+        const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false })
+                || canvas.getContext('experimental-webgl', { alpha: true, premultipliedAlpha: false });
+
+        if (!gl) return; // No WebGL — CSS fallback stays active
+
+        // --- Vertex shader: full-quad pass-through ---
+        const VS = `
+            attribute vec2 a_pos;
+            varying vec2 v_uv;
+            void main() {
+                v_uv = a_pos * 0.5 + 0.5;
+                gl_Position = vec4(a_pos, 0.0, 1.0);
+            }
+        `;
+
+        // --- Fragment shader: liquid glass effect ---
+        // Samples a screenshot texture with chromatic refraction + specular rim
+        const FS = `
+            precision mediump float;
+            varying vec2 v_uv;
+            uniform sampler2D u_bg;
+            uniform float u_time;
+            uniform vec2 u_res;        // canvas resolution in px
+            uniform float u_radius;    // corner radius in UV space
+            uniform float u_dark;      // 1 = dark theme, 0 = light
+
+            // Signed distance to a rounded rect
+            float sdRoundRect(vec2 p, vec2 b, float r) {
+                vec2 q = abs(p) - b + r;
+                return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+            }
+
+            void main() {
+                vec2 p = v_uv * u_res;                         // pixel coords
+                vec2 center = u_res * 0.5;
+                vec2 halfSize = u_res * 0.5;
+                float radius = u_radius;
+
+                // SDF for the pill shape
+                float d = sdRoundRect(p - center, halfSize - radius, radius);
+
+                // Discard outside the pill
+                if (d > 0.5) { gl_FragColor = vec4(0.0); return; }
+
+                // --- Refraction distortion ---
+                // Normal derived from SDF gradient (approximated)
+                float eps = 1.5;
+                float dx = sdRoundRect(p + vec2(eps, 0.0) - center, halfSize - radius, radius)
+                         - sdRoundRect(p - vec2(eps, 0.0) - center, halfSize - radius, radius);
+                float dy = sdRoundRect(p + vec2(0.0, eps) - center, halfSize - radius, radius)
+                         - sdRoundRect(p - vec2(0.0, eps) - center, halfSize - radius, radius);
+                vec2 normal = normalize(vec2(dx, dy));
+
+                // Liquid wave — very subtle, high frequency
+                float wave = sin(v_uv.x * 18.0 + u_time * 1.2) * 0.003
+                           + sin(v_uv.y * 14.0 + u_time * 0.9) * 0.002;
+
+                // Edge-based refraction strength (strongest near rim)
+                float edgeFactor = smoothstep(-8.0, 0.0, -d);    // 0 center, 1 at edge
+                float refractStr = 0.012 * edgeFactor + wave;
+
+                // Chromatic aberration: R/G/B sample at slightly different offsets
+                vec2 offset = normal * refractStr;
+                vec2 uvBase = v_uv + offset;
+                float r = texture2D(u_bg, uvBase + offset * 0.4).r;
+                float g = texture2D(u_bg, uvBase).g;
+                float b = texture2D(u_bg, uvBase - offset * 0.3).b;
+                vec3 refracted = vec3(r, g, b);
+
+                // --- Specular rim highlight ---
+                // Light direction: top-left
+                vec2 lightDir = normalize(vec2(-1.0, -1.0));
+                float spec = max(0.0, dot(normal, -lightDir));
+                float rim = pow(spec, 6.0) * edgeFactor;
+                vec3 specColor = u_dark > 0.5
+                    ? vec3(0.8, 0.7, 1.0)   // amethyst tint in dark mode
+                    : vec3(1.0, 1.0, 1.0);
+
+                // --- Base tint ---
+                vec3 tint = u_dark > 0.5
+                    ? vec3(0.07, 0.055, 0.11)  // dark amethyst
+                    : vec3(0.98, 0.96, 1.00);  // light orchid
+
+                // Blend: refracted bg + tint + specular
+                vec3 color = mix(refracted, tint, 0.28) + specColor * rim * 0.45;
+
+                // --- Alpha: opaque pill, feathered edge ---
+                float alpha = 1.0 - smoothstep(-1.0, 1.0, d);
+                // Inner transparency zone (center more see-through)
+                float innerAlpha = 0.82 + 0.12 * edgeFactor;
+                alpha *= innerAlpha;
+
+                // Top specular line (frosted top rim)
+                float topRim = smoothstep(2.0, 0.0, p.y) * smoothstep(-6.0, 0.0, -d);
+                color += vec3(1.0) * topRim * (u_dark > 0.5 ? 0.18 : 0.35);
+
+                gl_FragColor = vec4(color * alpha, alpha);
+            }
+        `;
+
+        function compileShader(type, src) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                console.warn('GL shader error:', gl.getShaderInfoLog(s));
+                return null;
+            }
+            return s;
+        }
+
+        const vs = compileShader(gl.VERTEX_SHADER, VS);
+        const fs = compileShader(gl.FRAGMENT_SHADER, FS);
+        if (!vs || !fs) return; // Shader compile failed — CSS fallback
+
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+            console.warn('GL link error:', gl.getProgramInfoLog(prog));
+            return;
+        }
+
+        // Full-screen quad
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1,-1,  1,-1,  -1,1,
+             1,-1,  1, 1,  -1,1
+        ]), gl.STATIC_DRAW);
+
+        const aPos = gl.getAttribLocation(prog, 'a_pos');
+        const uBg = gl.getUniformLocation(prog, 'u_bg');
+        const uTime = gl.getUniformLocation(prog, 'u_time');
+        const uRes = gl.getUniformLocation(prog, 'u_res');
+        const uRadius = gl.getUniformLocation(prog, 'u_radius');
+        const uDark = gl.getUniformLocation(prog, 'u_dark');
+
+        // Background texture (updated by screenshotting content behind nav)
+        const bgTex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, bgTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        // Seed with a solid color so shader runs on first frame
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+            new Uint8Array([18, 14, 28, 255]));
+
+        // Use html2canvas to grab the content behind the nav
+        // We do this lazily — capture once on load, then re-capture on scroll
+        let captureScheduled = false;
+        let captureReady = false;
+
+        function captureBackground() {
+            if (captureScheduled) return;
+            captureScheduled = true;
+            requestAnimationFrame(() => {
+                captureScheduled = false;
+                // Hide nav while capturing
+                nav.style.visibility = 'hidden';
+                canvas.style.visibility = 'hidden';
+
+                // html2canvas is heavy — instead we use a smarter approach:
+                // Sample the body's rendered gradient + content via OffscreenCanvas
+                // by drawing a snapshot of what's visible at the nav position.
+                // Since we can't cross-origin capture, we replicate the bg gradient.
+                grabBgSnapshot();
+
+                nav.style.visibility = '';
+                canvas.style.visibility = '';
+                captureReady = true;
+            });
+        }
+
+        function grabBgSnapshot() {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const W = Math.round(rect.width * dpr);
+            const H = Math.round(rect.height * dpr);
+
+            // Create an offscreen canvas matching the nav area
+            const oc = document.createElement('canvas');
+            oc.width = W; oc.height = H;
+            const ctx = oc.getContext('2d');
+
+            // Draw the body background gradient at this area
+            const isDark = document.body.getAttribute('data-theme') !== 'light';
+            if (isDark) {
+                // Dark: radial purple-to-black
+                const grd = ctx.createRadialGradient(W * 0.5, 0, 0, W * 0.5, H, Math.max(W, H));
+                grd.addColorStop(0, '#1a1528');
+                grd.addColorStop(1, '#08060c');
+                ctx.fillStyle = grd;
+            } else {
+                const grd = ctx.createLinearGradient(0, 0, W, H);
+                grd.addColorStop(0, '#f7f5fa');
+                grd.addColorStop(1, '#e8e4f0');
+                ctx.fillStyle = grd;
+            }
+            ctx.fillRect(0, 0, W, H);
+
+            // Add some color blobs to simulate content behind nav
+            ctx.globalAlpha = 0.25;
+            ctx.fillStyle = isDark ? '#7c3aed' : '#a855f7';
+            ctx.beginPath();
+            ctx.arc(W * 0.3, H * 0.5, W * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = isDark ? '#1d4ed8' : '#93c5fd';
+            ctx.beginPath();
+            ctx.arc(W * 0.75, H * 0.5, W * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            gl.bindTexture(gl.TEXTURE_2D, bgTex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, oc);
+        }
+
+        // Size canvas to match its CSS size * devicePixelRatio
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap at 2x
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.height * dpr);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            grabBgSnapshot();
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Re-capture on scroll (content shifts behind nav)
+        document.querySelectorAll('.tab-panel').forEach(p => {
+            p.addEventListener('scroll', captureBackground, { passive: true });
+        });
+
+        // Mark nav as GL-active (hides CSS fallback background)
+        nav.classList.add('gl-active');
+
+        let startTime = performance.now();
+
+        function render() {
+            const t = (performance.now() - startTime) / 1000;
+            const isDark = document.body.getAttribute('data-theme') !== 'light';
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.useProgram(prog);
+
+            gl.enableVertexAttribArray(aPos);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, bgTex);
+            gl.uniform1i(uBg, 0);
+            gl.uniform1f(uTime, t);
+            gl.uniform2f(uRes, canvas.width, canvas.height);
+            // Corner radius in pixels (32px CSS * DPR)
+            gl.uniform1f(uRadius, 32 * (window.devicePixelRatio || 1));
+            gl.uniform1f(uDark, isDark ? 1.0 : 0.0);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+        captureBackground();
+
+    })();
     </script>
 </body>
 </html>
