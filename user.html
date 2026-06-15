@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MealHub - Dashboard</title>
+    <style>
+        /* --- CORE DESIGN SYSTEM & VARIABLES --- */
+        :root {
+            /* Liquid Amethyst (Dark Theme - Default) */
+            --bg-gradient: radial-gradient(circle at 50% 0%, #1a1528 0%, #08060c 100%);
+            --glass-bg: rgba(22, 18, 33, 0.6);
+            --glass-border: rgba(168, 85, 247, 0.15);
+            --glass-specular: rgba(255, 255, 255, 0.08);
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --banner-blue: rgba(14, 30, 61, 0.6);
+            --banner-border: rgba(59, 130, 246, 0.2);
+            --banner-text: #3b82f6;
+            
+            /* Structural Variables */
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --spring-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --fade-speed: 400ms;
+        }
+
+        [data-theme="light"] {
+            /* Orchid Crystal (Light Theme) */
+            --bg-gradient: linear-gradient(135deg, #f7f5fa 0%, #e8e4f0 100%);
+            --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(124, 58, 237, 0.15);
+            --glass-specular: rgba(255, 255, 255, 0.4);
+            --accent: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.25);
+            --text-main: #1e1b4b;
+            --text-muted: #64748b;
+            --card-shadow: rgba(124, 58, 237, 0.08);
+            --banner-blue: rgba(219, 234, 254, 0.6);
+            --banner-border: rgba(59, 130, 246, 0.3);
+            --banner-text: #1d4ed8;
+        }
+
+        /* --- CSS RESET & MOBILE BEHAVIORS --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: background var(--fade-speed) ease;
+        }
+
+        input, textarea, select {
+            user-select: text;
+        }
+
+        /* --- HIDDEN SCROLLBARS --- */
+        .scrollable-content {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* --- LAYOUT APPLICATION FRAME --- */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            padding-bottom: calc(75px + var(--safe-bottom));
+        }
+
+        /* --- HEADER ROW --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+        }
+
+        .profile-frame {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid var(--glass-border);
+            background: var(--glass-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--card-shadow);
+            transition: transform var(--fade-speed) var(--spring-easing);
+        }
+
+        .profile-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-frame svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--text-muted);
+        }
+
+        .profile-trigger:active .profile-frame {
+            transform: scale(0.92);
+        }
+
+        .meta-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .meta-text p {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: capitalize;
+        }
+
+        .menu-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--card-shadow);
+            transition: transform var(--fade-speed) var(--spring-easing);
+        }
+
+        .menu-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-main);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* --- CONTENT MAIN PANELS --- */
+        .tab-panel {
+            flex: 1;
+            padding: 0 24px;
+            overflow-y: auto;
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity var(--fade-speed) ease, transform var(--fade-speed) ease;
+        }
+
+        .tab-panel.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- GLASS CARD SYSTEM --- */
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-specular);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 32px var(--card-shadow);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- ME DASHBOARD ASYMMETRIC GRID --- */
+        .me-grid {
+            display: grid;
+            grid-template-columns: 1.1sfr 0.9fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-tall {
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 220px;
+        }
+
+        .card-pressable {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 102px;
+            transition: transform 150ms var(--spring-easing), box-shadow 150ms ease;
+        }
+
+        .card-pressable:active {
+            transform: scale(0.96);
+            box-shadow: 0 4px 12px var(--card-shadow);
+        }
+
+        /* Icon Circle Subcontainers */
+        .icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        [data-theme="light"] .icon-wrap {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .card-tall .icon-wrap svg { fill: #eab308; }
+        #pref-card-trigger .icon-wrap svg { fill: #f59e0b; }
+        #event-card-trigger .icon-wrap svg { fill: #ef4444; }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.3;
+            color: var(--text-main);
+        }
+
+        .card-arrow {
+            align-self: flex-end;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        [data-theme="light"] .card-arrow {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .card-arrow svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--text-muted);
+        }
+
+        /* Menu Food Items list styling */
+        .food-list {
+            list-style: none;
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .food-list li {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: capitalize;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .food-list li::before {
+            content: "•";
+            color: var(--text-muted);
+        }
+
+        .tag-veg {
+            align-self: flex-end;
+            font-size: 12px;
+            font-weight: 700;
+            color: #eab308;
+            margin-top: auto;
+        }
+
+        /* --- FULL WIDTH STATUS STRIP --- */
+        .status-strip {
+            background: var(--banner-blue);
+            border: 1px solid var(--banner-border);
+            border-top: 1px solid var(--glass-specular);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+        }
+
+        .scooter-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .scooter-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+
+        .status-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .status-eta {
+            text-align: right;
+            border-left: 1px solid var(--banner-border);
+            padding-left: 16px;
+        }
+
+        .status-eta span {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .status-eta time {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--banner-text);
+            white-space: nowrap;
+        }
+
+        /* --- INTERACTIVE SEGMENTED CONTROLS --- */
+        .segment-wrapper {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 4px;
+            border-radius: 16px;
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .segment-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 0;
+            cursor: pointer;
+            z-index: 2;
+            transition: color var(--fade-speed) ease;
+        }
+
+        .segment-btn.active {
+            color: var(--text-main);
+        }
+
+        .segment-slider {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: 4px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            z-index: 1;
+            transition: transform 300ms var(--spring-easing), width 300ms var(--spring-easing);
+        }
+        [data-theme="light"] .segment-slider {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- HISTORY ELEMENT CARDS --- */
+        .history-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 150ms ease;
+            cursor: pointer;
+        }
+
+        .history-card:active {
+            transform: scale(0.98);
+        }
+
+        .history-details h5 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .history-details p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .history-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* --- EXPENSES VIEWS ELEMENTS --- */
+        .expense-summary-block {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-meta h5 {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-meta .amount {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .trend-line {
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #22c55e;
+        }
+
+        .trend-line svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .breakdown-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin: 24px 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--glass-border);
+            cursor: pointer;
+        }
+
+        .list-row:last-child {
+            border-bottom: none;
+        }
+
+        .list-row-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .list-row-left span {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .list-row-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .list-row-right svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--text-muted);
+        }
+
+        /* --- COPILOT AI CHAT PANEL INTERFACE --- */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px - var(--safe-bottom));
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg-bubble {
+            max-width: 80%;
+            padding: 14px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .msg-bubble.ai {
+            align-self: flex-start;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-bottom-left-radius: 4px;
+            color: var(--text-main);
+        }
+
+        .msg-bubble.user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .msg-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            font-size: 10px;
+            margin-top: 6px;
+            opacity: 0.7;
+        }
+
+        .msg-meta svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .chat-field {
+            flex: 1;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 14px 20px;
+            color: var(--text-main);
+            outline: none;
+            font-size: 14px;
+            transition: border-color var(--fade-speed) ease;
+        }
+
+        .chat-field:focus {
+            border-color: var(--accent);
+        }
+
+        .chat-send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--accent-glow);
+            transition: transform 150ms ease;
+            flex-shrink: 0;
+        }
+
+        .chat-send-btn:active {
+            transform: scale(0.92);
+        }
+
+        .chat-send-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+            margin-left: 2px;
+        }
+
+        /* --- FIXED BOTTOM NAVIGATION DOCK --- */
+        nav.bottom-dock {
+            position: fixed;
+            bottom: var(--safe-bottom);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            height: 72px;
+            background: var(--glass-bg);
+            border-top: 1px solid var(--glass-border);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 20;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            width: 60px;
+            color: var(--text-muted);
+            transition: color var(--fade-speed) ease;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--text-muted);
+            transition: fill var(--fade-speed) ease, transform 300ms var(--spring-easing);
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item.active svg {
+            fill: var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* --- POPUPS & OVERLAYS SYSTEM UI --- */
+        .overlay-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--fade-speed) ease, visibility var(--fade-speed) ease, backdrop-filter var(--fade-speed) ease;
+        }
+
+        .overlay-blur.active {
+            opacity: 1;
+            visibility: visible;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal-sheet {
+            position: absolute;
+            bottom: 24px;
+            left: 16px;
+            right: 16px;
+            max-width: 468px;
+            margin: 0 auto;
+            transform: scale(0.9) translateY(40px);
+            opacity: 0;
+            transition: transform var(--fade-speed) var(--spring-easing), opacity var(--fade-speed) ease;
+        }
+
+        .overlay-blur.active .modal-sheet {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        [data-theme="light"] .modal-close {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .modal-close svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--text-main);
+        }
+
+        /* Custom Action Option Matrix inside Modals */
+        .modal-actions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-option-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 14px;
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: background var(--fade-speed) ease;
+        }
+        .action-option-btn:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* --- SETTINGS SIDE DRAWER OVERLAY --- */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 150;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--fade-speed) ease, visibility var(--fade-speed) ease, backdrop-filter var(--fade-speed) ease;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .settings-drawer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100%;
+            background: var(--glass-bg);
+            border-left: 1px solid var(--glass-border);
+            backdrop-filter: blur(32px) saturate(190%);
+            -webkit-backdrop-filter: blur(32px) saturate(190%);
+            padding: 40px 24px;
+            box-shadow: -8px 0 32px rgba(0,0,0,0.3);
+            transform: translateX(100%);
+            transition: transform var(--fade-speed) cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .drawer-overlay.active .settings-drawer {
+            transform: translateX(0);
+        }
+
+        .drawer-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 12px;
+        }
+
+        .drawer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .drawer-label {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* --- TOGGLE METRIC SYSTEMS --- */
+        .toggle-switch {
+            width: 46px;
+            height: 26px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            cursor: pointer;
+            transition: background var(--fade-speed) ease;
+        }
+        [data-theme="light"] .toggle-switch {
+            background: rgba(0,0,0,0.1);
+        }
+        .toggle-switch.active {
+            background: var(--accent);
+        }
+
+        .toggle-handle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 300ms var(--spring-easing);
+        }
+
+        .toggle-switch.active .toggle-handle {
+            transform: translateX(20px);
+        }
+
+        /* Drawer Utility Buttons */
+        .drawer-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drawer-btn.logout {
+            margin-top: auto;
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* --- PREFERENCES POPUP FORM ENGINE --- */
+        .pill-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pill-btn {
+            flex: 1;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            padding: 12px 0;
+            border-radius: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+            transition: all var(--fade-speed) ease;
+        }
+
+        .pill-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .dropdown-grid {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .dropdown-grid.active {
+            display: grid;
+        }
+
+        .select-field-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .select-field-wrap label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .glass-select {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+            font-size: 13px;
+            width: 100%;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+
+        /* --- COMPREHENSIVE BOOKING FORM LAYOUT --- */
+        .form-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .glass-input {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .glass-textarea {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            height: 70px;
+        }
+
+        .submit-action-btn {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            outline: none;
+            padding: 14px;
+            border-radius: 14px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--accent-glow);
+            transition: transform 150ms ease;
+        }
+
+        .submit-action-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* --- QR TRANSACTION MODULE --- */
+        .qr-placeholder-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            border: 2px dashed var(--glass-border);
+            border-radius: 16px;
+            text-align: center;
+            gap: 12px;
+        }
+
+        .qr-placeholder-wrap svg {
+            width: 48px;
+            height: 48px;
+            fill: var(--text-muted);
+        }
+
+        .qr-placeholder-wrap p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- --- HEADER ROW --- -->
+        <header>
+            <div class="profile-trigger" id="profile-img-trigger">
+                <div class="profile-frame" id="avatar-frame">
+                    <!-- Default SVG Avatar outline -->
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                </div>
+                <div class="meta-text">
+                    <h1 id="header-username">Hi, Abdul</h1>
+                    <p id="header-role">User</p>
+                </div>
+            </div>
+            <div class="menu-btn" id="drawer-hamburger-trigger">
+                <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </div>
+        </header>
+
+        <!-- --- ME TAB (DEFAULT INTERFACE) --- -->
+        <main class="tab-panel active" id="panel-me">
+            <div class="me-grid">
+                <!-- Today's Food Locked Layout Grid -->
+                <div class="glass-card card-tall">
+                    <div>
+                        <div class="icon-wrap">
+                            <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm10-6h-4v7h4V3zm0 12h-4v7h4v-7z"/></svg>
+                        </div>
+                        <h3 class="card-title" id="lbl-today-food">Today's Food</h3>
+                        <ul class="food-list">
+                            <li>rice</li>
+                            <li>Beans</li>
+                            <li>Spinach</li>
+                            <li>chappathi</li>
+                        </ul>
+                    </div>
+                    <span class="tag-veg">- veg</span>
+                </div>
+
+                <!-- Food Preferences Pressable Trigger -->
+                <div class="glass-card card-pressable" id="pref-card-trigger">
+                    <div class="icon-wrap">
+                        <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
+                    </div>
+                    <h3 class="card-title" id="lbl-change-pref">Change Food Preferences</h3>
+                    <div class="card-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+
+                <!-- Booking Events Pressable Trigger -->
+                <div class="glass-card card-pressable" id="event-card-trigger">
+                    <div class="icon-wrap">
+                        <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M19 19H5V8h14v11zM16 1h-2v2h-4V1H8v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-3V1z"/></svg>
+                    </div>
+                    <h3 class="card-title" id="lbl-book-event">Book a Special Event</h3>
+                    <div class="card-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width Tracking Strip -->
+            <div class="glass-card status-strip">
+                <div class="scooter-icon">
+                    <svg viewBox="0 0 24 24"><path d="M19.15 13c.05-.32.08-.65.08-1s-.03-.68-.08-1h2.77c.05.32.08.65.08 1s-.03.68-.08 1h-2.77zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H10V9h2c.55 0 1-.45 1-1V6h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 1.84-.63 3.52-1.69 4.89z"/></svg>
+                </div>
+                <div class="status-info">
+                    <h4 id="lbl-delivery-title">We are delivering your order</h4>
+                    <p id="lbl-delivery-desc">Please wait while we deliver your order</p>
+                </div>
+                <div class="status-eta">
+                    <span id="lbl-eta-tag">Estimated Arrival</span>
+                    <time>9:45 AM</time>
+                </div>
+            </div>
+        </main>
+
+        <!-- --- HISTORY TAB INTERFACE --- -->
+        <main class="tab-panel" id="panel-history">
+            <div class="segment-wrapper">
+                <div class="segment-slider" id="history-slider" style="width: calc(50% - 4px); transform: translateX(0px);"></div>
+                <button class="segment-btn active" id="segment-orders-trigger">Orders</button>
+                <button class="segment-btn" id="segment-events-trigger">Events</button>
+            </div>
+            
+            <div class="history-stack id="history-content-list"">
+                <!-- Executed dynamically in state script architecture -->
+            </div>
+        </main>
+
+        <!-- --- EXPENSES TAB INTERFACE --- -->
+        <main class="tab-panel" id="panel-expenses">
+            <div class="segment-wrapper">
+                <div class="segment-slider" id="expenses-slider" style="width: calc(33.33% - 4px); transform: translateX(0px);"></div>
+                <button class="segment-btn active" onclick="switchExpensePeriod(0, this)">This Week</button>
+                <button class="segment-btn" onclick="switchExpensePeriod(1, this)">This Month</button>
+                <button class="segment-btn" onclick="switchExpensePeriod(2, this)">This Year</button>
+            </div>
+
+            <div class="expense-summary-block">
+                <div class="glass-card stat-meta">
+                    <h5 id="lbl-total-exp">Total Expenses</h5>
+                    <div class="amount">IDR 450.000</div>
+                    <div class="trend-line">
+                        <svg viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                        <span>12%</span>
+                    </div>
+                </div>
+                <div class="glass-card stat-meta card-pressable" id="unpaid-card-trigger">
+                    <h5 id="lbl-unpaid-bill">Unpaid Payments</h5>
+                    <div class="amount" style="color:#ef4444;">IDR 75.000</div>
+                    <p style="font-size:11px; color:var(--text-muted);" id="lbl-tap-pay">Tap to view QR</p>
+                </div>
+            </div>
+
+            <h4 class="breakdown-title" id="lbl-breakdown">Expense Breakdown</h4>
+            <div class="glass-card" style="padding: 0 16px;">
+                <div class="list-row">
+                    <div class="list-row-left">
+                        <span>Meals</span>
+                    </div>
+                    <div class="list-row-right">
+                        <span>IDR 375.000</span>
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="list-row">
+                    <div class="list-row-left">
+                        <span>Events</span>
+                    </div>
+                    <div class="list-row-right">
+                        <span>IDR 75.000</span>
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- --- COPILOT AI COGNITIVE CHAT INTERFACE --- -->
+        <main class="tab-panel" id="panel-ai">
+            <div class="chat-container">
+                <div class="chat-messages scrollable-content" id="chat-msg-viewport">
+                    <div class="msg-bubble ai" id="ai-dynamic-greeting">
+                        👋 Hi Abdul! How can I help you today?
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" class="chat-field" id="chat-input-field" placeholder="Ask anything...">
+                    <button class="chat-send-btn" id="chat-send-trigger">
+                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- --- FIXED BOTTOM NAVIGATION DOCK --- */ -->
+        <nav class="bottom-dock">
+            <button class="nav-item active" onclick="switchTab('me', this)">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
+                <span id="nav-me">Me</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('history', this)">
+                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 13.52l-2.12 1.41-2.62-3.93V7h2v5.27l2.74 4.25z"/></svg>
+                <span id="nav-history">History</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('expenses', this)">
+                <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                <span id="nav-expenses">Expenses</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('ai', this)">
+                <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                <span id="nav-ai">AI</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- --- GLOBAL POPUPS OVERLAY WRAPPERS --- -->
+    <div class="overlay-blur" id="popup-overlay-container">
+        
+        <!-- Profile Picture Selection Panel -->
+        <div class="glass-card modal-sheet" id="modal-profile" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-pic">Change Profile Picture?</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div class="modal-actions-list">
+                <button class="action-option-btn" onclick="triggerHardwareInput('camera')" id="opt-cam">Camera</button>
+                <button class="action-option-btn" onclick="triggerHardwareInput('gallery')" id="opt-gal">Gallery</button>
+                <button class="action-option-btn" style="color:#ef4444;" onclick="closeActiveModal()" id="opt-can">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Food Preferences Selector Configurator -->
+        <div class="glass-card modal-sheet" id="modal-preferences" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-pref">Preferences</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div class="pill-box">
+                <div class="pill-btn active" onclick="togglePrefPill('veg', this)">Veg</div>
+                <div class="pill-btn" onclick="togglePrefPill('nonveg', this)">Non-Veg</div>
+                <div class="pill-btn" onclick="togglePrefPill('nonmeat', this)">Non-Meat</div>
+            </div>
+            
+            <!-- Veg Options Stack -->
+            <div class="dropdown-grid active" id="grid-pref-veg">
+                <div class="select-field-wrap"><label>Veg-1</label><select class="glass-select"><option>Rice</option><option>Porridge</option></select></div>
+                <div class="select-field-wrap"><label>Veg-2</label><select class="glass-select"><option>Spinach</option><option>Salad</option></select></div>
+                <div class="select-field-wrap"><label>Veg-3</label><select class="glass-select"><option>Beans</option><option>Lentils</option></select></div>
+                <div class="select-field-wrap"><label>Veg-4</label><select class="glass-select"><option>Chappathi</option><option>Roti</option></select></div>
+            </div>
+            <!-- Non-Veg Options Stack -->
+            <div class="dropdown-grid" id="grid-pref-nonveg">
+                <div class="select-field-wrap"><label>Non-Veg-1</label><select class="glass-select"><option>Chicken Rice</option><option>Biryani</option></select></div>
+                <div class="select-field-wrap"><label>Non-Veg-2</label><select class="glass-select"><option>Fried Chicken</option><option>Beef Curry</option></select></div>
+                <div class="select-field-wrap"><label>Non-Veg-3</label><select class="glass-select"><option>Egg Roast</option><option>Omelette</option></select></div>
+                <div class="select-field-wrap"><label>Non-Veg-4</label><select class="glass-select"><option>Parotta</option><option>Naan</option></select></div>
+            </div>
+            <!-- Non-Meat Options Stack -->
+            <div class="dropdown-grid" id="grid-pref-nonmeat">
+                <div class="select-field-wrap"><label>Non-Meat-1</label><select class="glass-select"><option>Fish Rice</option><option>Ghee Rice</option></select></div>
+                <div class="select-field-wrap"><label>Non-Meat-2</label><select class="glass-select"><option>Fish Fry</option><option>Prawn Masala</option></select></div>
+                <div class="select-field-wrap"><label>Non-Meat-3</label><select class="glass-select"><option>Egg Scramble</option><option>Mushroom</option></select></div>
+                <div class="select-field-wrap"><label>Non-Meat-4</label><select class="glass-select"><option>Appam</option><option>Idiyappam</option></select></div>
+            </div>
+
+            <button class="submit-action-btn" onclick="submitPreferencesForm()" id="btn-submit-pref">Submit</button>
+        </div>
+
+        <!-- Special Event Booking Ledger Sheets -->
+        <div class="glass-card modal-sheet" id="modal-booking" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-book">Book a Special Event</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div class="form-stack">
+                <div class="input-group">
+                    <label id="lbl-form-date">Select Date</label>
+                    <input type="date" class="glass-input" id="book-date-field">
+                </div>
+                <div class="input-group">
+                    <label id="lbl-form-type">Food Type</label>
+                    <div class="pill-box" style="margin-bottom: 0;">
+                        <div class="pill-btn active" onclick="setBookingFoodType('veg', this)">Veg</div>
+                        <div class="pill-btn" onclick="setBookingFoodType('nonveg', this)">Non-Veg</div>
+                        <div class="pill-btn" onclick="setBookingFoodType('nonmeat', this)">Non-Meat</div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label id="lbl-form-make">What should we make?</label>
+                    <textarea class="glass-textarea" id="book-make-field" placeholder="Describe desired dishes..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label id="lbl-form-req">What's your special request?</label>
+                    <textarea class="glass-textarea" id="book-req-field" placeholder="Allergies, themes, arrangements..."></textarea>
+                </div>
+            </div>
+            <button class="submit-action-btn" onclick="submitBookingForm()" id="btn-submit-book">Submit</button>
+        </div>
+
+        <!-- Unpaid Bills Pay QR Image Sheet -->
+        <div class="glass-card modal-sheet" id="modal-qr" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-qr">Scan to Pay</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div id="qr-display-viewport">
+                <!-- System looks for QR.png in matching repository directory -->
+                <img src="QR.png" class="qr-image" alt="Payment QR Code" onerror="handleQRError(this)">
+            </div>
+        </div>
+
+        <!-- My Orders Populated Log Display Frame -->
+        <div class="glass-card modal-sheet" id="modal-my-orders" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-orders">My Orders</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div class="history-stack" id="my-orders-dynamic-list">
+                <!-- Static layout tracking injections via localized dictionary objects -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- --- SETTINGS DRAWER SEPARATE INTERFACE --- -->
+    <div class="drawer-overlay" id="drawer-mask-container">
+        <div class="settings-drawer">
+            <h3 class="drawer-title" id="drw-title">Settings</h3>
+            
+            <div class="drawer-row">
+                <span class="drawer-label" id="drw-theme">Dark Mode</span>
+                <div class="toggle-switch active" id="theme-toggle-switch" onclick="executeThemeToggle()">
+                    <div class="toggle-handle"></div>
+                </div>
+            </div>
+
+            <div class="drawer-row">
+                <span class="drawer-label" id="drw-lang">Language (EN/ID)</span>
+                <div class="toggle-switch" id="lang-toggle-switch" onclick="executeLangToggle()">
+                    <div class="toggle-handle"></div>
+                </div>
+            </div>
+
+            <button class="drawer-btn" onclick="openDrawerOrders()" id="drw-orders">
+                <span>My Orders</span>
+                <svg style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </button>
+
+            <button class="drawer-btn logout" onclick="executeSystemLogout()" id="drw-logout">
+                <span>Logout</span>
+                <svg style="width:16px;height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden Native Media Capturing Portals -->
+    <input type="file" id="hardware-camera-portal" accept="image/*" capture="camera" style="display:none;" onchange="processCapturedMedia(this)">
+    <input type="file" id="hardware-gallery-portal" accept="image/*" style="display:none;" onchange="processCapturedMedia(this)">
+
+
+    <!-- --- APPLICATION ARCHITECTURE STATE ENGINE --- -->
+    <script>
+        // --- TRANSLATION STRING DICTIONARIES ---
+        const dictionary = {
+            EN: {
+                todayFood: "Today's Food", changePref: "Change Food Preferences", bookEvent: "Book a Special Event",
+                delivTitle: "We are delivering your order", delivDesc: "Please wait while we deliver your order",
+                etaTag: "Estimated Arrival", totalExp: "Total Expenses", unpaidBill: "Unpaid Payments",
+                tapPay: "Tap to view QR", breakdown: "Expense Breakdown", askHold: "Ask anything...",
+                navMe: "Me", navHistory: "History", navExpenses: "Expenses", navAi: "AI",
+                popPic: "Change Profile Picture?", optCam: "Camera", optGal: "Gallery", optCan: "Cancel",
+                popPref: "Preferences", btnSub: "Submit", popBook: "Book a Special Event",
+                fDate: "Select Date", fType: "Food Type", fMake: "What should we make?", fReq: "What's your special request?",
+                popQr: "Scan to Pay", popOrders: "My Orders", drwTitle: "Settings", drwTheme: "Dark Mode",
+                drwLang: "Language (EN/ID)", drwOrders: "My Orders", drwLogout: "Logout"
+            },
+            ID: {
+                todayFood: "Makanan Hari Ini", changePref: "Ubah Preferensi Makanan", bookEvent: "Pesan Acara Khusus",
+                delivTitle: "Kami sedang mengantar pesanan Anda", delivDesc: "Menyiapkan ruang kerja Anda",
+                etaTag: "Perkiraan Tiba", totalExp: "Total Pengeluaran", unpaidBill: "Pembayaran Belum Lunas",
+                tapPay: "Ketuk untuk melihat QR", breakdown: "Rincian Pengeluaran", askHold: "Tanyakan sesuatu...",
+                navMe: "Saya", navHistory: "Riwayat", navExpenses: "Pengeluaran", navAi: "AI",
+                popPic: "Ubah Foto Profil?", optCam: "Kamera", optGal: "Galeri", optCan: "Batal",
+                popPref: "Preferensi", btnSub: "Kirim", popBook: "Pesan Acara Khusus",
+                fDate: "Pilih Tanggal", fType: "Jenis Makanan", fMake: "Apa yang harus kami buat?", fReq: "Apa permintaan khusus Anda?",
+                popQr: "Pindai untuk Membayar", popOrders: "Pesanan Saya", drwTitle: "Pengaturan", drwTheme: "Mode Gelap",
+                drwLang: "Bahasa (EN/ID)", drwOrders: "Pesanan Saya", drwLogout: "Keluar"
+            }
+        };
+
+        // --- CORE APPLICATION MEMORY MEMORY CONFIGURATION ---
+        let state = {
+            user: "Abdul",
+            role: "user",
+            theme: "dark",
+            lang: "EN",
+            activeTab: "me",
+            historySegment: "orders",
+            bookingFoodType: "veg",
+            preferencesFoodPill: "veg"
+        };
+
+        // Static Data Store arrays
+        const demoOrders = [
+            { name: "Nasi Goreng Special", date: "2026-06-15", time: "13:20", price: "IDR 45.000", status: "Completed" },
+            { name: "Ayam Bakar Taliwang", date: "2026-06-14", time: "19:45", price: "IDR 65.000", status: "Completed" },
+            { name: "Sate Ayam Madura", date: "2026-06-12", time: "12:10", price: "IDR 40.000", status: "Completed" },
+            { name: "Martabak Manis Cokelat", date: "2026-06-16", time: "20:00", price: "IDR 50.000", status: "Pending" }
+        ];
+
+        const demoEvents = [
+            { name: "Family Gathering Party", date: "2026-07-02", time: "10:00", price: "IDR 1.200.000", status: "Completed" },
+            { name: "Corporate Lunch Catering", date: "2026-08-15", time: "12:00", price: "IDR 3.500.000", status: "Pending" }
+        ];
+
+        const aiResponses = [
+            "Based on your order history, I recommend trying the local special variant next Tuesday!",
+            "Your weekly structural meal plan suggestion has been updated in the log matrix dashboard.",
+            "Delivery status alert update: The logistics partner is currently routing around major intersections.",
+            "Special event catering package options suggestion: Package Gold fits your 40-person volume model."
+        ];
+
+        // --- LIFECYCLE INITIALIZATION ---
+        window.addEventListener("DOMContentLoaded", () => {
+            // Read from cache storage pipelines
+            if(localStorage.getItem("username")) state.user = localStorage.getItem("username");
+            if(localStorage.getItem("role")) state.role = localStorage.getItem("role");
+            if(localStorage.getItem("theme")) state.theme = localStorage.getItem("theme");
+            if(localStorage.getItem("language")) state.lang = localStorage.getItem("language");
+
+            // Sync structural interfaces
+            document.getElementById("header-username").innerText = `Hi, ${state.user}`;
+            document.getElementById("header-role").innerText = state.role;
+            
+            // Set interface nodes
+            document.body.setAttribute("data-theme", state.theme);
+            document.getElementById("theme-toggle-switch").classList.toggle("active", state.theme === "dark");
+            document.getElementById("lang-toggle-switch").classList.toggle("active", state.lang === "ID");
+            
+            applyLocalization();
+            renderHistoryStack();
+            setupInteractivityTriggers();
+        });
+
+        // --- LOCALIZATION HANDLING LOGIC ---
+        function applyLocalization() {
+            const strings = dictionary[state.lang];
+            
+            // Core DOM mapping loops
+            document.getElementById("lbl-today-food").innerText = strings.todayFood;
+            document.getElementById("lbl-change-pref").innerText = strings.changePref;
+            document.getElementById("lbl-book-event").innerText = strings.bookEvent;
+            document.getElementById("lbl-delivery-title").innerText = strings.delivTitle;
+            document.getElementById("lbl-delivery-desc").innerText = strings.delivDesc;
+            document.getElementById("lbl-eta-tag").innerText = strings.etaTag;
+            
+            // Expenses
+            document.getElementById("lbl-total-exp").innerText = strings.totalExp;
+            document.getElementById("lbl-unpaid-bill").innerText = strings.unpaidBill;
+            document.getElementById("lbl-tap-pay").innerText = strings.tapPay;
+            document.getElementById("lbl-breakdown").innerText = strings.breakdown;
+            
+            // AI Chat
+            document.getElementById("chat-input-field").setAttribute("placeholder", strings.askHold);
+            document.getElementById("ai-dynamic-greeting").innerText = `👋 ${state.lang === 'EN' ? 'Hi' : 'Halo'} ${state.user}! ${state.lang === 'EN' ? 'How can I help you today?' : 'Ada yang bisa saya bantu hari ini?'}`;
+            
+            // Nav elements
+            document.getElementById("nav-me").innerText = strings.navMe;
+            document.getElementById("nav-history").innerText = strings.navHistory;
+            document.getElementById("nav-expenses").innerText = strings.navExpenses;
+            document.getElementById("nav-ai").innerText = strings.navAi;
+
+            // Popups UI text mapping
+            document.getElementById("pop-title-pic").innerText = strings.popPic;
+            document.getElementById("opt-cam").innerText = strings.optCam;
+            document.getElementById("opt-gal").innerText = strings.optGal;
+            document.getElementById("opt-can").innerText = strings.optCan;
+            document.getElementById("pop-title-pref").innerText = strings.popPref;
+            document.getElementById("btn-submit-pref").innerText = strings.btnSub;
+            document.getElementById("pop-title-book").innerText = strings.popBook;
+            document.getElementById("lbl-form-date").innerText = strings.fDate;
+            document.getElementById("lbl-form-type").innerText = strings.fType;
+            document.getElementById("lbl-form-make").innerText = strings.fMake;
+            document.getElementById("lbl-form-req").innerText = strings.fReq;
+            document.getElementById("btn-submit-book").innerText = strings.btnSub;
+            document.getElementById("pop-title-qr").innerText = strings.popQr;
+            document.getElementById("pop-title-orders").innerText = strings.popOrders;
+            
+            // Drawer
+            document.getElementById("drw-title").innerText = strings.drwTitle;
+            document.getElementById("drw-theme").innerText = strings.drwTheme;
+            document.getElementById("drw-lang").innerText = strings.drwLang;
+            document.getElementById("drw-orders").querySelector("span").innerText = strings.drwOrders;
+            document.getElementById("drw-logout").querySelector("span").innerText = strings.drwLogout;
+        }
+
+        // --- NAVIGATION DOCK ROUTING MATRIX ---
+        function switchTab(targetTab, nodeReference) {
+            if(state.activeTab === targetTab) return;
+            
+            // UI Element Reset
+            document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
+            nodeReference.classList.add("active");
+            
+            const currentActivePanel = document.querySelector(".tab-panel.active");
+            const nextPanelTarget = document.getElementById(`panel-${targetTab}`);
+            
+            // Hardware Accelerated Transition Engine execution loops
+            currentActivePanel.style.opacity = "0";
+            currentActivePanel.style.transform = "translateY(10px)";
+            
+            setTimeout(() => {
+                currentActivePanel.classList.remove("active");
+                nextPanelTarget.classList.add("active");
+                
+                // Force layout reflow
+                nextPanelTarget.offsetHeight;
+                
+                nextPanelTarget.style.opacity = "1";
+                nextPanelTarget.style.transform = "translateY(0)";
+                state.activeTab = targetTab;
+            }, 200);
+        }
+
+        // --- SYSTEM INTERACTIVE MODALS ENGINE MANAGER ---
+        function openPopupModal(modalId) {
+            const overlay = document.getElementById("popup-overlay-container");
+            // Hide all potential matching children cards first
+            overlay.querySelectorAll(".modal-sheet").forEach(sheet => sheet.style.display = "none");
+            
+            document.getElementById(modalId).style.display = "block";
+            overlay.classList.add("active");
+        }
+
+        function closeActiveModal() {
+            const overlay = document.getElementById("popup-overlay-container");
+            overlay.classList.remove("active");
+        }
+
+        // Close Popups via direct overlay backing taps
+        document.getElementById("popup-overlay-container").addEventListener("click", (e) => {
+            if(e.target === document.getElementById("popup-overlay-container")) closeActiveModal();
+        });
+
+        // --- EVENT TRIGGERS ATTACHMENT ROUTINES ---
+        function setupInteractivityTriggers() {
+            // Me Cards Open Actions
+            document.getElementById("pref-card-trigger").addEventListener("click", () => openPopupModal("modal-preferences"));
+            document.getElementById("event-card-trigger").addEventListener("click", () => openPopupModal("modal-booking"));
+            document.getElementById("unpaid-card-trigger").addEventListener("click", () => openPopupModal("modal-qr"));
+            document.getElementById("profile-img-trigger").addEventListener("click", () => openPopupModal("modal-profile"));
+            
+            // Settings Side Drawer triggers mapping
+            document.getElementById("drawer-hamburger-trigger").addEventListener("click", () => {
+                document.getElementById("drawer-mask-container").classList.add("active");
+            });
+            document.getElementById("drawer-mask-container").addEventListener("click", (e) => {
+                if(e.target === document.getElementById("drawer-mask-container")) {
+                    document.getElementById("drawer-mask-container").classList.remove("active");
+                }
+            });
+
+            // Segmented History Slider Logic
+            document.getElementById("segment-orders-trigger").addEventListener("click", function() {
+                toggleHistorySegment("orders", this);
+            });
+            document.getElementById("segment-events-trigger").addEventListener("click", function() {
+                toggleHistorySegment("events", this);
+            });
+
+            // Chat actions enter key binding
+            document.getElementById("chat-input-field").addEventListener("keypress", (e) => {
+                if(e.key === "Enter") executeUserChatMessage();
+            });
+            document.getElementById("chat-send-trigger").addEventListener("click", executeUserChatMessage);
+        }
+
+        // --- HARDWARE MEDIA LINKING CHANNELS ---
+        function triggerHardwareInput(sourceType) {
+            closeActiveModal();
+            if(sourceType === 'camera') {
+                document.getElementById("hardware-camera-portal").click();
+            } else {
+                document.getElementById("hardware-gallery-portal").click();
+            }
+        }
+
+        function processCapturedMedia(inputTarget) {
+            const fileAsset = inputTarget.files[0];
+            if (!fileAsset) return;
+
+            const readerInstance = new FileReader();
+            readerInstance.onload = function (e) {
+                const base64String = e.target.result;
+                const avatarFrame = document.getElementById("avatar-frame");
+                avatarFrame.innerHTML = `<img src="${base64String}" alt="Profile Picture">`;
+            };
+            readerInstance.readAsDataURL(fileAsset);
+        }
+
+        // --- REPOSITORY QR LOADING EXCEPTION PROTECTION ---
+        function handleQRError(imgNode) {
+            const fallbackContainer = document.createElement("div");
+            fallbackContainer.className = "qr-placeholder-wrap";
+            fallbackContainer.innerHTML = `
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                <p>${state.lang === 'EN' ? 'Payment Asset (QR.png) not found in direct server path repository directories.' : 'Aset QR.png tidak ditemukan di direktori lokal.'}</p>
+            `;
+            imgNode.parentNode.replaceChild(fallbackContainer, imgNode);
+        }
+
+        // --- CONFIGURATION DRAWER HANDLING FUNCTIONS ---
+        function executeThemeToggle() {
+            const switchNode = document.getElementById("theme-toggle-switch");
+            state.theme = state.theme === "dark" ? "light" : "dark";
+            switchNode.classList.toggle("active", state.theme === "dark");
+            document.body.setAttribute("data-theme", state.theme);
+            localStorage.setItem("theme", state.theme);
+        }
+
+        function executeLangToggle() {
+            const switchNode = document.getElementById("lang-toggle-switch");
+            state.lang = state.lang === "EN" ? "ID" : "EN";
+            switchNode.classList.toggle("active", state.lang === "ID");
+            localStorage.setItem("language", state.lang);
+            applyLocalization();
+            renderHistoryStack();
+        }
+
+        function openDrawerOrders() {
+            document.getElementById("drawer-mask-container").classList.remove("active");
+            
+            const listContainer = document.getElementById("my-orders-dynamic-list");
+            listContainer.innerHTML = "";
+            
+            // Build dynamic elements map out of structural array store data
+            demoOrders.forEach(ord => {
+                const card = document.createElement("div");
+                card.className = "glass-card history-card";
+                card.innerHTML = `
+                    <div class="history-details">
+                        <h5>${ord.name}</h5>
+                        <p>${ord.date} • ${ord.time}</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="history-price">${ord.price}</span>
+                        <p style="font-size:11px; font-weight:600; color:${ord.status === 'Completed' ? '#22c55e' : '#f59e0b'}; margin-top:2px;">${ord.status}</p>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+            
+            setTimeout(() => openPopupModal("modal-my-orders"), 300);
+        }
+
+        function executeSystemLogout() {
+            localStorage.removeItem("role");
+            localStorage.removeItem("username");
+            window.location.href = "index.html";
+        }
+
+        // --- PREFERENCES INTERNAL MULTI PILL LOGIC ---
+        function togglePrefPill(pillType, nodeRef) {
+            const parentPillBox = nodeRef.parentNode;
+            parentPillBox.querySelectorAll(".pill-btn").forEach(btn => btn.classList.remove("active"));
+            nodeRef.classList.add("active");
+            
+            // Hide all sub grids
+            document.getElementById("grid-pref-veg").classList.remove("active");
+            document.getElementById("grid-pref-nonveg").classList.remove("active");
+            document.getElementById("grid-pref-nonmeat").classList.remove("active");
+            
+            document.getElementById(`grid-pref-${pillType}`).classList.add("active");
+            state.preferencesFoodPill = pillType;
+        }
+
+        function submitPreferencesForm() {
+            closeActiveModal();
+            // Core functional reset as mapped by user blueprints
+            setTimeout(() => {
+                const pills = document.querySelectorAll("#modal-preferences .pill-btn");
+                togglePrefPill("veg", pills[0]);
+            }, 500);
+        }
+
+        // --- BOOKING EVENT HANDLING STRUCTURAL ENGINE ---
+        function setBookingFoodType(type, nodeRef) {
+            nodeRef.parentNode.querySelectorAll(".pill-btn").forEach(btn => btn.classList.remove("active"));
+            nodeRef.classList.add("active");
+            state.bookingFoodType = type;
+        }
+
+        function submitBookingForm() {
+            closeActiveModal();
+            setTimeout(() => {
+                document.getElementById("book-date-field").value = "";
+                document.getElementById("book-make-field").value = "";
+                document.getElementById("book-req-field").value = "";
+                const pills = document.querySelectorAll("#modal-booking .pill-btn");
+                setBookingFoodType("veg", pills[0]);
+            }, 500);
+        }
+
+        // --- HISTORY LOG COMPILING MODULES ---
+        function toggleHistorySegment(segmentTarget, nodeRef) {
+            if (state.historySegment === segmentTarget) return;
+            
+            nodeRef.parentNode.querySelectorAll(".segment-btn").forEach(b => b.classList.remove("active"));
+            nodeRef.classList.add("active");
+            
+            const slider = document.getElementById("history-slider");
+            if (segmentTarget === "orders") {
+                slider.style.transform = "translateX(0px)";
+            } else {
+                const widthOffset = nodeRef.offsetWidth;
+                slider.style.transform = `translateX(${widthOffset}px)`;
+            }
+            
+            state.historySegment = segmentTarget;
+            renderHistoryStack();
+        }
+
+        function renderHistoryStack() {
+            const viewport = document.getElementById("history-content-list");
+            if(!viewport) return; // safety bounds
+            
+            viewport.innerHTML = "";
+            const targets = state.historySegment === "orders" ? demoOrders : demoEvents;
+            
+            targets.forEach(item => {
+                const element = document.createElement("div");
+                element.className = "glass-card history-card";
+                element.innerHTML = `
+                    <div class="history-details">
+                        <h5>${item.name}</h5>
+                        <p>${item.date} • ${item.time}</p>
+                    </div>
+                    <span class="history-price">${item.price}</span>
+                `;
+                viewport.appendChild(element);
+            });
+        }
+
+        // Expenses Tab internal mock periods swapper switch
+        function switchExpensePeriod(index, nodeRef) {
+            nodeRef.parentNode.querySelectorAll(".segment-btn").forEach(b => b.classList.remove("active"));
+            nodeRef.classList.add("active");
+            
+            const slider = document.getElementById("expenses-slider");
+            const stepWidth = nodeRef.offsetWidth;
+            slider.style.transform = `translateX(${stepWidth * index}px)`;
+            // Content keeps identical demo payloads per specification blueprints rule configurations
+        }
+
+        // --- AI CHAT RESPONSE GENERATION RUNTIMES ---
+        function executeUserChatMessage() {
+            const inputField = document.getElementById("chat-input-field");
+            const textString = inputField.value.trim();
+            if(!textString) return;
+            
+            inputField.value = "";
+            const container = document.getElementById("chat-msg-viewport");
+            
+            // Build current clock footprint timestamp
+            const now = new Date();
+            let hr = now.getHours();
+            let min = now.getMinutes();
+            const ampm = hr >= 12 ? 'PM' : 'AM';
+            hr = hr % 12;
+            hr = hr ? hr : 12; // hour zero evaluates to twelve
+            min = min < 10 ? '0' + min : min;
+            const timeStamp = `${hr}:${min} ${ampm}`;
+
+            // Mount User bubble
+            const userBubble = document.createElement("div");
+            userBubble.className = "msg-bubble user";
+            userBubble.innerHTML = `
+                ${textString}
+                <div class="msg-meta">
+                    <time>${timeStamp}</time>
+                    <svg viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM2 12l1.41-1.41L9 16 7.59 17.41 2 12z"/></svg>
+                </div>
+            `;
+            container.appendChild(userBubble);
+            scrollChatViewportToBaseline();
+
+            // Asynchronous Artificial Callback Engine routine
+            setTimeout(() => {
+                const localizedAiResponses = {
+                    EN: [
+                        "Based on your order history, I recommend trying the local special variant next Tuesday!",
+                        "Your weekly meal plan suggestion has been updated in the dashboard.",
+                        "Delivery status update: The courier is currently approaching your location.",
+                        "Special event package suggestion: Package Silver fits your current parameters."
+                    ],
+                    ID: [
+                        "Berdasarkan riwayat pesanan Anda, saya sarankan mencoba varian spesial lokal Selasa depan!",
+                        "Saran rencana makanan mingguan Anda telah diperbarui di dasbor.",
+                        "Pembaruan status pengiriman: Kurir saat ini sedang mendekati lokasi Anda.",
+                        "Saran paket acara khusus: Paket Silver sesuai dengan parameter Anda saat ini."
+                    ]
+                };
+
+                const dataset = localizedAiResponses[state.lang];
+                const randomText = dataset[Math.floor(Math.random() * dataset.length)];
+                
+                const aiBubble = document.createElement("div");
+                aiBubble.className = "msg-bubble ai";
+                aiBubble.innerHTML = `
+                    ${randomText}
+                    <div class="msg-meta" style="color: var(--text-muted);">
+                        <time>${timeStamp}</time>
+                    </div>
+                `;
+                container.appendChild(aiBubble);
+                scrollChatViewportToBaseline();
+            }, 1000);
+        }
+
+        function scrollChatViewportToBaseline() {
+            const container = document.getElementById("chat-msg-viewport");
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>
