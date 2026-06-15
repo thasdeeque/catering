@@ -688,35 +688,28 @@
         /* --- FLOATING ISLAND BOTTOM NAVIGATION DOCK --- */
         nav.bottom-dock {
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 56px);
-            max-width: 380px;
-            height: 64px;
-            /* CSS fallback glass - shown if WebGL fails */
-            background: rgba(18, 14, 28, 0.78);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(60px) saturate(240%);
-            -webkit-backdrop-filter: blur(60px) saturate(240%);
+            width: calc(100% - 40px);
+            max-width: 320px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 3px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 50;
-            border-radius: 32px;
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.55),
-                0 4px 16px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            padding: 0 6px;
-            /* When WebGL is active, nav background becomes transparent */
-            transition: background 0.3s ease;
+            border-radius: 26px;
+            padding: 0 8px;
+            transition: all 0.3s ease;
         }
 
         nav.bottom-dock.gl-active {
             background: transparent;
-            border-color: transparent;
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
             box-shadow: none;
@@ -725,22 +718,22 @@
         /* Solid frosted capsule sitting behind the nav for extra opacity/blur */
         .nav-backdrop {
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 56px);
-            max-width: 380px;
-            height: 64px;
-            border-radius: 32px;
-            background: rgba(10, 8, 16, 0.55);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            width: calc(100% - 40px);
+            max-width: 320px;
+            height: 52px;
+            border-radius: 26px;
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 48;
             pointer-events: none;
         }
 
         [data-theme="light"] .nav-backdrop {
-            background: rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0);
         }
 
         @media (min-width: 768px) {
@@ -939,7 +932,7 @@
             border-left: 1px solid var(--glass-border);
             backdrop-filter: blur(32px) saturate(190%);
             -webkit-backdrop-filter: blur(32px) saturate(190%);
-            padding: max(40px, calc(env(safe-area-inset-top, 0px) + 20px)) 24px 40px;
+            padding: max(40px, calc(env(safe-area-inset-top, 0px) + 20px)) 24px 16px;
             box-shadow: -8px 0 32px rgba(0,0,0,0.3);
             transform: translateX(100%);
             transition: transform var(--fade-speed) cubic-bezier(0.16, 1, 0.3, 1);
@@ -1296,18 +1289,22 @@
                         <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">F</div>
                         <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Rendang · Rice · Beans</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
                     </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">Sa</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Pancake · Omelette · Juice</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Brunch 10:00 AM</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">Su</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Biriyani · Raita · Salad</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 1:00 PM</div></div>
+                    </div>
                 </div>
             </div>
 
             <!-- Quick Stats Row -->
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; margin-bottom:8px;">
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:16px; margin-bottom:8px;">
                 <div class="glass-card" style="padding:16px; text-align:center;">
                     <div style="font-size:22px; font-weight:800; color:var(--accent);">24</div>
                     <div style="font-size:11px; color:var(--text-muted); margin-top:4px; font-weight:600;">Meals This Month</div>
-                </div>
-                <div class="glass-card" style="padding:16px; text-align:center;">
-                    <div style="font-size:22px; font-weight:800; color:#22c55e;">4.8</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px; font-weight:600;">Avg Rating</div>
                 </div>
                 <div class="glass-card" style="padding:16px; text-align:center;">
                     <div style="font-size:22px; font-weight:800; color:#f59e0b;">2</div>
@@ -1460,13 +1457,13 @@
         <!-- Canvas sits behind, WebGL renders the liquid glass effect -->
         <canvas id="nav-gl-canvas" style="
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 56px);
-            max-width: 380px;
-            height: 64px;
-            border-radius: 32px;
+            width: calc(100% - 40px);
+            max-width: 320px;
+            height: 52px;
+            border-radius: 26px;
             z-index: 49;
             pointer-events: none;
         "></canvas>
@@ -1609,6 +1606,33 @@
             </div>
         </div>
 
+        <!-- Report a Problem Sheet -->
+        <div class="glass-card modal-sheet" id="modal-report" style="display: none;">
+            <div class="modal-header">
+                <h3 id="pop-title-report">Report a Problem</h3>
+                <div class="modal-close" onclick="closeActiveModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+            </div>
+            <div class="form-stack" style="margin-bottom:0;">
+                <div class="input-group">
+                    <label id="lbl-report-photo">Attach Photo</label>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-option-btn" onclick="triggerHardwareInput('camera')" style="flex:1; text-align:center; padding:12px;">Camera</button>
+                        <button class="action-option-btn" onclick="triggerHardwareInput('gallery')" style="flex:1; text-align:center; padding:12px;">Gallery</button>
+                    </div>
+                    <div id="report-preview" style="display:none; margin-top:8px;">
+                        <img id="report-image-preview" style="width:100%; border-radius:12px; max-height:180px; object-fit:cover;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label id="lbl-report-desc">Describe the Problem</label>
+                    <textarea class="glass-textarea" id="report-desc-field" placeholder="Tell us what went wrong..." style="height:100px;"></textarea>
+                </div>
+                <button class="submit-action-btn" onclick="submitReport()" id="btn-submit-report">Send Report</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- --- SETTINGS DRAWER SEPARATE INTERFACE --- -->
@@ -1633,6 +1657,13 @@
             <button class="drawer-btn" onclick="openDrawerOrders()" id="drw-orders">
                 <span>My Orders</span>
                 <svg style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </button>
+
+            <div style="flex:1;"></div>
+
+            <button class="drawer-btn" onclick="openReportModal()" id="drw-report">
+                <span>Report a Problem</span>
+                <svg style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
             </button>
 
             <button class="drawer-btn logout" onclick="executeSystemLogout()" id="drw-logout">
@@ -1887,8 +1918,17 @@
             const readerInstance = new FileReader();
             readerInstance.onload = function (e) {
                 const base64String = e.target.result;
-                const avatarFrame = document.getElementById("avatar-frame");
-                avatarFrame.innerHTML = `<img src="${base64String}" alt="Profile Picture">`;
+                const reportOverlay = document.getElementById("popup-overlay-container");
+                const reportModal = document.getElementById("modal-report");
+                if (reportOverlay.classList.contains("active") && reportModal.style.display === "block") {
+                    const preview = document.getElementById("report-preview");
+                    const img = document.getElementById("report-image-preview");
+                    img.src = base64String;
+                    preview.style.display = "block";
+                } else {
+                    const avatarFrame = document.getElementById("avatar-frame");
+                    avatarFrame.innerHTML = `<img src="${base64String}" alt="Profile Picture">`;
+                }
             };
             readerInstance.readAsDataURL(fileAsset);
         }
@@ -1946,6 +1986,29 @@
             });
             
             setTimeout(() => openPopupModal("modal-my-orders"), 300);
+        }
+
+        function openReportModal() {
+            document.getElementById("drawer-mask-container").classList.remove("active");
+            setTimeout(() => openPopupModal("modal-report"), 300);
+        }
+
+        function submitReport() {
+            const desc = document.getElementById("report-desc-field").value.trim();
+            const preview = document.getElementById("report-preview");
+            const img = document.getElementById("report-image-preview");
+            const hasPhoto = preview.style.display === "block" && img.src;
+
+            if (!desc && !hasPhoto) {
+                alert(state.lang === "ID" ? "Harap isi deskripsi atau lampirkan foto." : "Please describe the problem or attach a photo.");
+                return;
+            }
+
+            alert(state.lang === "ID" ? "Laporan terkirim! Terima kasih." : "Report sent! Thank you.");
+            document.getElementById("report-desc-field").value = "";
+            preview.style.display = "none";
+            img.src = "";
+            closeActiveModal();
         }
 
         function executeSystemLogout() {
