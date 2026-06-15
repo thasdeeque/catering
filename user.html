@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MealHub">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08060c">
+    <link rel="manifest" href="manifest.json">
     <title>MealHub - Dashboard</title>
     <style>
         /* --- CORE DESIGN SYSTEM & VARIABLES --- */
@@ -53,13 +59,31 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
+        html {
+            background: #08060c;
+            height: 100%;
+            /* Prevent elastic bounce scroll on iOS revealing white */
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+        [data-theme="light"] html { background: #e8e4f0; }
+
         body {
             background: var(--bg-gradient);
+            background-attachment: fixed;
             color: var(--text-main);
-            min-height: 100vh;
+            height: 100dvh;
+            height: 100vh; /* fallback */
+            width: 100%;
             overflow: hidden;
-            position: relative;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
             transition: background var(--fade-speed) ease;
+            /* Safe area padding so content doesn't hide under notch/status bar */
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
         }
 
         input, textarea, select {
@@ -79,11 +103,36 @@
         .app-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            max-width: 500px;
+            height: 100%;
+            max-width: 680px;
             margin: 0 auto;
             position: relative;
-            padding-bottom: calc(75px + var(--safe-bottom));
+            padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px) + 12px);
+            /* Prevent overscroll */
+            overflow: hidden;
+        }
+
+        /* On iPad / large screens: wider layout, slightly more padding */
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 720px;
+                padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px) + 16px);
+            }
+            .me-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            header {
+                padding: 32px 32px 24px;
+            }
+            .tab-panel {
+                padding: 0 32px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .app-container {
+                max-width: 800px;
+            }
         }
 
         /* --- HEADER ROW --- */
@@ -173,11 +222,18 @@
             flex: 1;
             padding: 0 24px;
             overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
             display: none;
             opacity: 0;
             transform: translateY(10px);
             transition: opacity var(--fade-speed) ease, transform var(--fade-speed) ease;
+            /* Internal scroll, not full page */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 16px;
         }
+        .tab-panel::-webkit-scrollbar { display: none; }
 
         .tab-panel.active {
             display: block;
@@ -538,7 +594,7 @@
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 180px - var(--safe-bottom));
+            height: calc(100dvh - 180px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
         }
 
         .chat-messages {
@@ -642,24 +698,40 @@
             margin-left: 2px;
         }
 
-        /* --- FIXED BOTTOM NAVIGATION DOCK --- */
+        /* --- FLOATING ISLAND BOTTOM NAVIGATION DOCK --- */
         nav.bottom-dock {
             position: fixed;
-            bottom: var(--safe-bottom);
+            /* Sit above gesture bar with elevation gap */
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
             left: 50%;
             transform: translateX(-50%);
-            width: 100%;
-            max-width: 500px;
-            height: 72px;
+            /* Pill width: fits content, max capped for iPad */
+            width: calc(100% - 48px);
+            max-width: 420px;
+            height: 68px;
             background: var(--glass-bg);
-            border-top: 1px solid var(--glass-border);
-            backdrop-filter: blur(24px) saturate(190%);
-            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-specular);
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 20;
-            box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+            /* Elevated pill shape */
+            border-radius: 28px;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.35),
+                0 2px 8px rgba(0,0,0,0.2),
+                inset 0 1px 0 var(--glass-specular);
+            padding: 0 8px;
+        }
+
+        @media (min-width: 768px) {
+            nav.bottom-dock {
+                max-width: 460px;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+            }
         }
 
         .nav-item {
@@ -671,9 +743,11 @@
             border: none;
             outline: none;
             cursor: pointer;
-            width: 60px;
+            flex: 1;
+            padding: 8px 4px;
             color: var(--text-muted);
             transition: color var(--fade-speed) ease;
+            border-radius: 20px;
         }
 
         .nav-item svg {
@@ -694,7 +768,7 @@
 
         .nav-item.active svg {
             fill: var(--accent);
-            transform: scale(1.1);
+            transform: scale(1.15) translateY(-1px);
         }
 
         /* --- POPUPS & OVERLAYS SYSTEM UI --- */
@@ -702,8 +776,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(0px);
             -webkit-backdrop-filter: blur(0px);
@@ -798,8 +872,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(0px);
             -webkit-backdrop-filter: blur(0px);
@@ -826,13 +900,14 @@
             border-left: 1px solid var(--glass-border);
             backdrop-filter: blur(32px) saturate(190%);
             -webkit-backdrop-filter: blur(32px) saturate(190%);
-            padding: 40px 24px;
+            padding: max(40px, calc(env(safe-area-inset-top, 0px) + 20px)) 24px 40px;
             box-shadow: -8px 0 32px rgba(0,0,0,0.3);
             transform: translateX(100%);
             transition: transform var(--fade-speed) cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
             gap: 24px;
+            overflow-y: auto;
         }
 
         .drawer-overlay.active .settings-drawer {
@@ -1153,6 +1228,54 @@
                     <time>9:45 AM</time>
                 </div>
             </div>
+
+            <!-- Weekly Meal Schedule Preview -->
+            <div class="glass-card" style="margin-top:16px; padding: 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h4 style="font-size:15px; font-weight:700;">This Week's Schedule</h4>
+                    <span style="font-size:12px; color:var(--accent); font-weight:600;">June 2026</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; flex-shrink:0;">M</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600;">Rice · Spinach · Chicken</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
+                        <span style="font-size:11px; font-weight:700; color:#22c55e; background:rgba(34,197,94,0.1); padding:3px 8px; border-radius:8px;">Today</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">T</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Nasi Goreng · Egg · Tofu</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">W</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Ayam Bakar · Rice · Salad</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">T</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Soto Ayam · Chappathi</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0;">F</div>
+                        <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:var(--text-muted);">Rendang · Rice · Beans</div><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Lunch 12:30 PM</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Row -->
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; margin-bottom:8px;">
+                <div class="glass-card" style="padding:16px; text-align:center;">
+                    <div style="font-size:22px; font-weight:800; color:var(--accent);">24</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px; font-weight:600;">Meals This Month</div>
+                </div>
+                <div class="glass-card" style="padding:16px; text-align:center;">
+                    <div style="font-size:22px; font-weight:800; color:#22c55e;">4.8</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px; font-weight:600;">Avg Rating</div>
+                </div>
+                <div class="glass-card" style="padding:16px; text-align:center;">
+                    <div style="font-size:22px; font-weight:800; color:#f59e0b;">2</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px; font-weight:600;">Upcoming Events</div>
+                </div>
+            </div>
+
         </main>
 
         <!-- --- HISTORY TAB INTERFACE --- -->
@@ -1163,7 +1286,7 @@
                 <button class="segment-btn" id="segment-events-trigger">Events</button>
             </div>
             
-            <div class="history-stack id="history-content-list"">
+            <div class="history-stack" id="history-content-list">
                 <!-- Executed dynamically in state script architecture -->
             </div>
         </main>
@@ -1213,6 +1336,48 @@
                         <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                     </div>
                 </div>
+                <div class="list-row">
+                    <div class="list-row-left">
+                        <span>Snacks & Drinks</span>
+                    </div>
+                    <div class="list-row-right">
+                        <span>IDR 0</span>
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <h4 class="breakdown-title" style="margin-top:24px;">Recent Transactions</h4>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="glass-card" style="padding:14px 16px; display:flex; align-items:center; gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:12px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg style="width:18px;height:18px;fill:var(--accent)" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7z"/></svg>
+                    </div>
+                    <div style="flex:1"><div style="font-size:13px;font-weight:600;">Nasi Goreng Special</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Today, 07:30 AM</div></div>
+                    <span style="font-size:14px;font-weight:700;color:#ef4444;">-IDR 45.000</span>
+                </div>
+                <div class="glass-card" style="padding:14px 16px; display:flex; align-items:center; gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:12px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg style="width:18px;height:18px;fill:var(--accent)" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7z"/></svg>
+                    </div>
+                    <div style="flex:1"><div style="font-size:13px;font-weight:600;">Ayam Bakar Taliwang</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Yesterday, 12:45 PM</div></div>
+                    <span style="font-size:14px;font-weight:700;color:#ef4444;">-IDR 65.000</span>
+                </div>
+                <div class="glass-card" style="padding:14px 16px; display:flex; align-items:center; gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:12px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg style="width:18px;height:18px;fill:#22c55e" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9z"/></svg>
+                    </div>
+                    <div style="flex:1"><div style="font-size:13px;font-weight:600;">Top-up Balance</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Jun 14, 09:00 AM</div></div>
+                    <span style="font-size:14px;font-weight:700;color:#22c55e;">+IDR 200.000</span>
+                </div>
+                <div class="glass-card" style="padding:14px 16px; display:flex; align-items:center; gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:12px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg style="width:18px;height:18px;fill:var(--accent)" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7z"/></svg>
+                    </div>
+                    <div style="flex:1"><div style="font-size:13px;font-weight:600;">Sate Ayam Madura</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Jun 14, 01:10 PM</div></div>
+                    <span style="font-size:14px;font-weight:700;color:#ef4444;">-IDR 40.000</span>
+                </div>
             </div>
         </main>
 
@@ -1222,6 +1387,22 @@
                 <div class="chat-messages scrollable-content" id="chat-msg-viewport">
                     <div class="msg-bubble ai" id="ai-dynamic-greeting">
                         👋 Hi Abdul! How can I help you today?
+                    </div>
+                    <div class="msg-bubble user">
+                        What's on the menu tomorrow?
+                        <div class="msg-meta"><time>9:31 AM</time><svg viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM2 12l1.41-1.41L9 16 7.59 17.41 2 12z"/></svg></div>
+                    </div>
+                    <div class="msg-bubble ai">
+                        Tomorrow's menu is Nasi Goreng with egg, tofu stir-fry, and fresh cucumber salad 🍳 It's a veg meal matching your current preference!
+                        <div class="msg-meta" style="color: var(--text-muted);"><time>9:31 AM</time></div>
+                    </div>
+                    <div class="msg-bubble user">
+                        Can I switch to non-veg for next week?
+                        <div class="msg-meta"><time>9:33 AM</time><svg viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM2 12l1.41-1.41L9 16 7.59 17.41 2 12z"/></svg></div>
+                    </div>
+                    <div class="msg-bubble ai">
+                        Sure! You can update your food preferences anytime from the Me tab → Change Food Preferences. I'll make sure your meals are updated by next Monday 🍗
+                        <div class="msg-meta" style="color: var(--text-muted);"><time>9:33 AM</time></div>
                     </div>
                 </div>
                 <div class="chat-input-row">
@@ -1454,15 +1635,21 @@
 
         // Static Data Store arrays
         const demoOrders = [
-            { name: "Nasi Goreng Special", date: "2026-06-15", time: "13:20", price: "IDR 45.000", status: "Completed" },
-            { name: "Ayam Bakar Taliwang", date: "2026-06-14", time: "19:45", price: "IDR 65.000", status: "Completed" },
-            { name: "Sate Ayam Madura", date: "2026-06-12", time: "12:10", price: "IDR 40.000", status: "Completed" },
-            { name: "Martabak Manis Cokelat", date: "2026-06-16", time: "20:00", price: "IDR 50.000", status: "Pending" }
+            { name: "Nasi Goreng Special", date: "2026-06-16", time: "07:30", price: "IDR 45.000", status: "Completed" },
+            { name: "Ayam Bakar Taliwang", date: "2026-06-15", time: "12:45", price: "IDR 65.000", status: "Completed" },
+            { name: "Sate Ayam Madura", date: "2026-06-14", time: "13:10", price: "IDR 40.000", status: "Completed" },
+            { name: "Martabak Manis Cokelat", date: "2026-06-14", time: "19:00", price: "IDR 50.000", status: "Pending" },
+            { name: "Gado-Gado Jakarta", date: "2026-06-13", time: "12:20", price: "IDR 35.000", status: "Completed" },
+            { name: "Rendang Padang + Rice", date: "2026-06-12", time: "13:05", price: "IDR 70.000", status: "Completed" },
+            { name: "Mie Goreng Seafood", date: "2026-06-11", time: "18:55", price: "IDR 55.000", status: "Completed" },
+            { name: "Soto Ayam Lamongan", date: "2026-06-10", time: "07:15", price: "IDR 30.000", status: "Completed" },
         ];
 
         const demoEvents = [
-            { name: "Family Gathering Party", date: "2026-07-02", time: "10:00", price: "IDR 1.200.000", status: "Completed" },
-            { name: "Corporate Lunch Catering", date: "2026-08-15", time: "12:00", price: "IDR 3.500.000", status: "Pending" }
+            { name: "Family Gathering Party", date: "2026-07-02", time: "10:00", price: "IDR 1.200.000", status: "Pending" },
+            { name: "Corporate Lunch Catering", date: "2026-08-15", time: "12:00", price: "IDR 3.500.000", status: "Pending" },
+            { name: "Birthday Celebration - 30 Pax", date: "2026-05-20", time: "18:00", price: "IDR 2.100.000", status: "Completed" },
+            { name: "Graduation Dinner - 50 Pax", date: "2026-04-12", time: "19:30", price: "IDR 4.000.000", status: "Completed" },
         ];
 
         const aiResponses = [
