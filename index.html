@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -898,19 +897,73 @@
   </div>
 
   <script>
-    // Safety wrapper for Lucide icons - prevents crashes if CDN fails
-    window._lucideRetryCount = 0;
-    window._lucideMaxRetries = 50;
+    // Local icon set - no CDN dependency, works offline and everywhere
+    const ICONS = {
+  "circle": `<circle cx="12" cy="12" r="10" />`,
+  "home": `<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />`,
+  "truck": `<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /> <path d="M15 18H9" /> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" /> <circle cx="17" cy="18" r="2" /> <circle cx="7" cy="18" r="2" />`,
+  "shopping-bag": `<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /> <path d="M3 6h18" /> <path d="M16 10a4 4 0 0 1-8 0" />`,
+  "sparkles": `<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /> <path d="M20 3v4" /> <path d="M22 5h-4" /> <path d="M4 17v2" /> <path d="M5 18H3" />`,
+  "utensils": `<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /> <path d="M7 2v20" /> <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />`,
+  "clock": `<circle cx="12" cy="12" r="10" /> <polyline points="12 6 12 12 16 14" />`,
+  "check": `<path d="M20 6 9 17l-5-5" />`,
+  "x": `<path d="M18 6 6 18" /> <path d="m6 6 12 12" />`,
+  "chevron-right": `<path d="m9 18 6-6-6-6" />`,
+  "alert-circle": `<circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" />`,
+  "check-circle-2": `<path d="M21.801 10A10 10 0 1 1 17 3.335" /> <path d="m9 11 3 3L22 4" />`,
+  "arrow-left": `<path d="m12 19-7-7 7-7" /> <path d="M19 12H5" />`,
+  "arrow-right": `<path d="M5 12h14" /> <path d="m12 5 7 7-7 7" />`,
+  "arrow-up": `<path d="m5 12 7-7 7 7" /> <path d="M12 19V5" />`,
+  "shopping-cart": `<circle cx="8" cy="21" r="1" /> <circle cx="19" cy="21" r="1" /> <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />`,
+  "package": `<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /> <path d="m7.5 4.27 9 5.15" />`,
+  "chef-hat": `<path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z" /> <path d="M6 17h12" />`,
+  "sun": `<circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" />`,
+  "scissors": `<circle cx="6" cy="6" r="3" /> <path d="M8.12 8.12 12 12" /> <path d="M20 4 8.12 15.88" /> <circle cx="6" cy="18" r="3" /> <path d="M14.8 14.8 20 20" />`,
+  "square": `<rect width="18" height="18" x="3" y="3" rx="2" />`,
+  "plus": `<path d="M5 12h14" /> <path d="M12 5v14" />`,
+  "apple": `<path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z" /> <path d="M10 2c1 .5 2 2 2 5" />`,
+  "cookie": `<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" /> <path d="M8.5 8.5v.01" /> <path d="M16 15.5v.01" /> <path d="M12 12v.01" /> <path d="M11 17v.01" /> <path d="M7 14v.01" />`,
+  "leaf": `<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /> <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />`,
+  "sprout": `<path d="M7 20h10" /> <path d="M10 20c5.5-2.5.8-6.4 3-10" /> <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" /> <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" />`,
+  "minus": `<path d="M5 12h14" />`,
+  "layout-grid": `<rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" />`,
+  "alert-triangle": `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" />`
+};
+
+    // Renders all [data-lucide] elements into inline SVGs using the local ICONS map.
+    // If `nodes` is passed, only searches within those nodes (matches old lucide.createIcons behavior).
     function safeCreateIcons(nodes) {
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        try { lucide.createIcons(nodes ? { nodes: nodes } : undefined); } catch(e) { console.warn('Icons error:', e); }
-      } else if (window._lucideRetryCount < window._lucideMaxRetries) {
-        window._lucideRetryCount++;
-        setTimeout(function() { safeCreateIcons(nodes); }, 100);
-      }
+      const roots = nodes && nodes.length ? nodes : [document];
+      roots.forEach(root => {
+        const targets = root.hasAttribute && root.hasAttribute('data-lucide')
+          ? [root]
+          : Array.from(root.querySelectorAll('[data-lucide]'));
+        targets.forEach(el => {
+          const name = el.getAttribute('data-lucide');
+          const svgInner = ICONS[name];
+          if (!svgInner) { console.warn('Unknown icon:', name); return; }
+          const width = el.style.width || '24px';
+          const height = el.style.height || '24px';
+          const extraStyle = el.getAttribute('style') || '';
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          svg.setAttribute('width', '24');
+          svg.setAttribute('height', '24');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          svg.setAttribute('fill', 'none');
+          svg.setAttribute('stroke', 'currentColor');
+          svg.setAttribute('stroke-width', '2');
+          svg.setAttribute('stroke-linecap', 'round');
+          svg.setAttribute('stroke-linejoin', 'round');
+          svg.setAttribute('class', 'lucide lucide-' + name);
+          if (extraStyle) svg.setAttribute('style', extraStyle);
+          svg.innerHTML = svgInner;
+          el.replaceWith(svg);
+        });
+      });
     }
 
-    // Initialize Lucide icons
+    // Render all icons on initial load
     safeCreateIcons();
 
     // ===== DATA =====
@@ -933,7 +986,7 @@
     let kitchenData = {
       spoon: { name: 'Spoon', total: 50, inStock: 50, inUse: 0, icon: 'utensils' },
       fork: { name: 'Fork', total: 50, inStock: 50, inUse: 0, icon: 'utensils' },
-      plates: { name: 'Plates', total: 50, inStock: 50, inUse: 0, icon: 'ellipse' },
+      plates: { name: 'Plates', total: 50, inStock: 50, inUse: 0, icon: 'circle' },
       trays: { name: 'Trays', total: 10, inStock: 10, inUse: 0, icon: 'layout-grid' }
     };
 
@@ -980,7 +1033,7 @@
       }
       const e = document.getElementById('deliveryEmpty');
       if (e) e.style.display = (ac && Object.keys(S).length > 0) ? 'flex' : 'none';
-      if (typeof lucide !== 'undefined') safeCreateIcons();
+      safeCreateIcons();
     }
 
     // ===== DELIVERY MODAL FUNCTIONS =====
@@ -995,7 +1048,7 @@
       if (nv.length) { const h = document.createElement('div'); h.className = 'person-section-header'; h.innerHTML = '<span>Non-Veg</span><div class="person-section-line"></div><span>' + nv.length + '</span>'; l.appendChild(h); nv.forEach((p, i) => l.appendChild(cR(p, 'nv-' + i))); }
       uSA(); uSC();
       const o = document.getElementById('deliveryModalOverlay'); o.classList.add('active'); document.body.style.overflow = 'hidden';
-      if (typeof lucide !== 'undefined') safeCreateIcons([o]);
+      safeCreateIcons([o]);
     }
 
     function cR(p, id) {
@@ -1053,7 +1106,7 @@
         if (subId === 'stock') renderStockList();
         if (subId === 'kitchen-items') renderKitchenList();
       }
-      if (typeof lucide !== 'undefined') safeCreateIcons();
+      safeCreateIcons();
     }
 
     function backToShop() {
@@ -1065,7 +1118,7 @@
       document.getElementById('shoppingOtherInput').value = '';
       document.getElementById('shoppingConfirmBtn').disabled = true;
       selectedShoppingItem = null;
-      if (typeof lucide !== 'undefined') safeCreateIcons();
+      safeCreateIcons();
     }
 
     // --- My Shopping - Card Grid ---
@@ -1121,7 +1174,7 @@
         `;
         list.appendChild(row);
       });
-      if (typeof lucide !== 'undefined') safeCreateIcons();
+      safeCreateIcons();
     }
 
     function openStockModal(key) {
@@ -1135,7 +1188,7 @@
       const overlay = document.getElementById('stockModalOverlay');
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
-      if (typeof lucide !== 'undefined') safeCreateIcons([overlay]);
+      safeCreateIcons([overlay]);
     }
 
     function closeStockModal(e) {
@@ -1187,7 +1240,7 @@
         `;
         list.appendChild(row);
       });
-      if (typeof lucide !== 'undefined') safeCreateIcons();
+      safeCreateIcons();
     }
 
     function openKitchenModal(key) {
@@ -1201,7 +1254,7 @@
       const overlay = document.getElementById('kitchenModalOverlay');
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
-      if (typeof lucide !== 'undefined') safeCreateIcons([overlay]);
+      safeCreateIcons([overlay]);
     }
 
     function closeKitchenModal(e) {
@@ -1257,87 +1310,4 @@
       if (t) t.classList.add('active');
       // Reset shop sub-screens when leaving shop
       if (tn !== 'shop') {
-        document.querySelectorAll('.shop-sub-screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('shop-main').classList.add('active');
-      }
-      if (tn === 'ai') { setTimeout(() => { MS.scrollTo({ top: MS.scrollHeight, behavior: 'smooth' }); CI.focus(); }, 100); }
-      else MS.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    NI.forEach(item => {
-      item.addEventListener('click', e => {
-        e.preventDefault();
-        if (item.classList.contains('active')) return;
-        NI.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        sT(item.getAttribute('data-tab'));
-        let st = performance.now();
-        function ap(t) { uPP(); if (t - st < 400) requestAnimationFrame(ap); }
-        requestAnimationFrame(ap);
-      });
-    });
-
-    function showToast(m) {
-      T.textContent = m; T.style.opacity = '1'; T.style.transform = 'translateX(-50%) translateY(0)';
-      setTimeout(() => { T.style.opacity = '0'; T.style.transform = 'translateX(-50%) translateY(-60px)'; }, 2500);
-    }
-
-    // ===== AI CHAT =====
-    function gT() { const n = new Date(); return n.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-    function sCB() { setTimeout(() => MS.scrollTo({ top: MS.scrollHeight, behavior: 'smooth' }), 50); }
-    function aM(tx, s) {
-      const r = document.createElement('div'); r.className = 'message-row ' + s;
-      const b = document.createElement('div'); b.className = 'message-bubble ' + s;
-      b.innerHTML = eH(tx) + '<div class="message-time">' + gT() + '</div>';
-      r.appendChild(b); CM.appendChild(r); sCB();
-    }
-    function eH(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-    function sTy() { const r = document.createElement('div'); r.className = 'message-row ai'; r.id = 'typingRow'; const i = document.createElement('div'); i.className = 'typing-indicator'; i.innerHTML = '<span></span><span></span><span></span>'; r.appendChild(i); CM.appendChild(r); sCB(); return r; }
-    function rTy() { const t = document.getElementById('typingRow'); if (t) t.remove(); }
-    function gB(i) {
-      const l = i.toLowerCase();
-      if (l.includes('cook') || l.includes('recipe') || l.includes('make')) return "How about grilled salmon with lemon butter? It's quick, healthy, and pairs beautifully with steamed asparagus.";
-      if (l.includes('healthy') || l.includes('diet') || l.includes('light')) return "For a healthy dinner, try a quinoa bowl with roasted chickpeas, avocado, and a lemon-tahini dressing. High protein and full of flavor!";
-      if (l.includes('prep') || l.includes('plan') || l.includes('batch')) return "Meal prep idea: Cook a big batch of chicken curry and portion it with brown rice. It stays fresh for 4 days and reheats perfectly.";
-      if (l.includes('veg') || l.includes('vegetarian') || l.includes('paneer')) return "Try a paneer tikka masala with garlic naan, or a hearty lentil soup with crusty bread. Both are satisfying and protein-rich!";
-      if (l.includes('breakfast') || l.includes('morning')) return "Overnight oats with chia seeds, fresh berries, and a drizzle of honey. Prep it tonight and grab it tomorrow!";
-      if (l.includes('lunch') || l.includes('afternoon')) return "A Mediterranean wrap with hummus, grilled veggies, and feta is a perfect light lunch. Add a side of Greek salad!";
-      if (l.includes('dinner') || l.includes('evening')) return "For dinner, a slow-cooked beef stew with crusty bread is hard to beat. Or keep it light with a stir-fry and jasmine rice.";
-      if (l.includes('dessert') || l.includes('sweet')) return "How about a simple fruit salad with a honey-yogurt drizzle? Or if you're feeling indulgent, a dark chocolate mousse.";
-      if (l.includes('spicy') || l.includes('hot')) return "A Thai red curry with prawns hits the spot. Balance the heat with coconut rice and a side of cucumber raita.";
-      if (l.includes('quick') || l.includes('fast') || l.includes('easy')) return "A 15-minute stir-fry: toss whatever veggies you have in a hot pan with soy sauce, ginger, and garlic. Serve over rice.";
-      return "That's a great question! I'd suggest exploring seasonal ingredients. Is there a specific cuisine or dietary preference you have in mind?";
-    }
-    function sM() { const t = CI.value.trim(); if (!t) return; aM(t, 'user'); CI.value = ''; SB.disabled = true; setTimeout(() => { sTy(); setTimeout(() => { rTy(); aM(gB(t), 'ai'); SB.disabled = true; }, 1500 + Math.random() * 800); }, 300); }
-    function sQM(t) { CI.value = t; SB.disabled = false; sM(); const c = document.getElementById('suggestionChips'); if (c) { c.style.opacity = '0'; c.style.transform = 'translateY(-8px)'; c.style.transition = 'opacity .3s ease,transform .3s ease'; setTimeout(() => c.style.display = 'none', 300); } }
-    CI.addEventListener('keypress', e => { if (e.key === 'Enter') sM(); });
-    CI.addEventListener('input', () => { SB.disabled = !CI.value.trim(); });
-
-    // ===== INIT =====
-    window.addEventListener('load', () => {
-      uPP(); uH(); uD();
-      setTimeout(() => {
-        const rV = BV, rN = BNV, rT = rV + rN, vp = rT > 0 ? Math.round(rV / rT * 100) : 0, np = rT > 0 ? Math.round(rN / rT * 100) : 0;
-        const sv = document.getElementById('stackedVeg'), sn = document.getElementById('stackedNonveg');
-        if (sv) sv.style.width = vp + '%'; if (sn) sn.style.width = np + '%';
-        aV('vegCount', 0, rV, 1000); aV('nonvegCount', 0, rN, 1000); aP('vegPercent', vp, 1000); aP('nonvegPercent', np, 1000);
-      }, 400);
-    });
-    window.addEventListener('resize', uPP);
-
-    function aV(id, start, end, dur) {
-      const el = document.getElementById(id); if (!el) return;
-      const st = performance.now();
-      function up(ct) { const elapsed = ct - st, p = Math.min(elapsed / dur, 1), ea = 1 - Math.pow(1 - p, 3); el.textContent = Math.round(start + (end - start) * ea); if (p < 1) requestAnimationFrame(up); }
-      requestAnimationFrame(up);
-    }
-    function aP(id, ev, dur) {
-      const el = document.getElementById(id); if (!el) return;
-      const st = performance.now();
-      function up(ct) { const elapsed = ct - st, p = Math.min(elapsed / dur, 1), ea = 1 - Math.pow(1 - p, 3); el.textContent = Math.round(ev * ea) + '%'; if (p < 1) requestAnimationFrame(up); }
-      requestAnimationFrame(up);
-    }
-  </script>
-
-</body>
-  </html>
+        document.querySelect
