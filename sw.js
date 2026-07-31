@@ -1,9 +1,7 @@
-const CACHE_NAME = 'kitchen-dashboard-v1';
+const CACHE_NAME = 'kitchen-dashboard-v2';
 const urlsToCache = [
   './',
   './index.html',
-  './styles.css',
-  './script.js',
   './manifest.json'
 ];
 
