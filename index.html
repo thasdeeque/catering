@@ -303,9 +303,14 @@ body {
 .status-pill.pending { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.35); }
 
 /* --- Screens --- */
-.screen { display: none; }
-.screen.active { display: block; }
+.screen { display: none; opacity: 0; }
+.screen.active { display: block; animation: screenFadeIn 0.25s ease-out; }
 #screen-ai.active { display: flex; flex-direction: column; min-height: 100%; }
+
+@keyframes screenFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .screen-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; text-align: center; }
 .screen-placeholder i { width: 48px; height: 48px; color: var(--text-tertiary); margin-bottom: 16px; opacity: 0.5; }
 .screen-placeholder h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
@@ -857,6 +862,224 @@ body {
   .shop-grid { gap: 16px; }
 }
 
+/* ============================================================
+   LOGIN OVERLAY
+   ============================================================ */
+#loginOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 20px;
+}
+
+#loginOverlay {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#loginOverlay.hidden {
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeSlideUp 0.35s ease-out;
+}
+
+.login-card {
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 36px 28px 32px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent-warm);
+}
+
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.brand-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: var(--accent);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px 14px 46px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: var(--surface-elevated);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: var(--text-tertiary);
+}
+
+.input-field:focus {
+  border-color: var(--accent-warm);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--accent-warm-light);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: var(--accent-warm);
+}
+
+.toggle-password {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.toggle-password:hover {
+  color: var(--text-primary);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 50px;
+  border: none;
+  background: var(--accent);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  margin-top: 8px;
+}
+
+.login-btn:active {
+  transform: scale(0.98);
+}
+
+.login-btn:hover {
+  background: var(--accent-light);
+}
+
+.login-footer {
+  margin-top: 28px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#loginToast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-60px);
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  z-index: 1200;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+  opacity: 0;
+}
 </style>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -864,6 +1087,104 @@ body {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="brand-icon">📦</div>
+          <h1 class="login-title">Welcome Back</h1>
+          <p class="login-subtitle">Sign in to Delivery Hub Dashboard</p>
+        </div>
+
+        <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+          <div class="input-group">
+            <label class="input-label" for="username">Username</label>
+            <div class="input-wrapper">
+              <i data-lucide="user" class="input-icon"></i>
+              <input
+                type="text"
+                id="username"
+                class="input-field"
+                placeholder="Enter your username"
+                autocomplete="username"
+              >
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label" for="password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input
+                type="password"
+                id="password"
+                class="input-field"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              >
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility()" aria-label="Toggle Password Visibility">
+                <i data-lucide="eye" id="eyeIcon" style="width: 18px; height: 18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="login-btn">
+            <span>Sign In</span>
+            <i data-lucide="arrow-right" style="width:18px; height:18px;"></i>
+          </button>
+        </form>
+      </div>
+
+      <div class="login-footer">
+        Kitchen Delivery Hub &copy; 2026
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Toast -->
+  <div id="loginToast">Login successful!</div>
+
+  <script>
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    // Dummy auth: any input (even empty) logs you in.
+    function handleLogin(event) {
+      event.preventDefault();
+      showLoginToast('Authenticating...');
+      setTimeout(() => {
+        showLoginToast('Success! Redirecting...');
+        setTimeout(() => {
+          const overlay = document.getElementById('loginOverlay');
+          overlay.classList.add('hidden');
+          setTimeout(() => { overlay.style.display = 'none'; }, 400);
+        }, 600);
+      }, 700);
+    }
+
+    function showLoginToast(msg) {
+      const toast = document.getElementById('loginToast');
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-60px)';
+      }, 1800);
+    }
+  </script>
 
 <div class="main-scroll" id="mainScroll">
 
