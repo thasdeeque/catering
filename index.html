@@ -2067,11 +2067,7 @@ function aP(id, ev, dur) {
 
 </script>
   
-  <!-- PWA Service Worker Registration -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-    }
     
     // Add to home screen prompt for iOS
     if (window.navigator.standalone === false) {
