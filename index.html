@@ -1112,6 +1112,167 @@ body {
 </head>
 <body>
 
+  <!-- FORCE LOGIN - DIRECT INLINE STYLES -->
+  <div id="loginOverlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f3;
+    padding: 20px;
+    opacity: 1;
+    pointer-events: auto;
+  ">
+    <div style="
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 36px;
+      padding: 36px 28px 32px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+      border-top: 4px solid #c9a96e;
+      text-align: center;
+    ">
+      <div style="
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        background: #1a1a1e;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin: 0 auto 16px;
+      ">📦</div>
+      <h1 style="
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: #0f0f11;
+        margin-bottom: 6px;
+      ">Welcome Back</h1>
+      <p style="
+        font-size: 13px;
+        font-weight: 600;
+        color: #9a9aa3;
+        margin-bottom: 32px;
+      ">Sign in to Delivery Hub Dashboard</p>
+
+      <form id="loginFormDirect" onsubmit="handleLoginDirect(event)">
+        <div style="margin-bottom: 20px; text-align: left;">
+          <label style="
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9a9aa3;
+            display: block;
+            margin-bottom: 8px;
+          ">Username</label>
+          <input
+            type="text"
+            id="usernameDirect"
+            style="
+              width: 100%;
+              padding: 14px 16px;
+              border-radius: 20px;
+              border: 1.5px solid rgba(0,0,0,0.06);
+              background: #fafafc;
+              font-family: 'Inter', sans-serif;
+              font-size: 15px;
+              font-weight: 500;
+              color: #0f0f11;
+              outline: none;
+              box-sizing: border-box;
+            "
+            placeholder="Enter your username"
+            autocomplete="username"
+          >
+        </div>
+
+        <div style="margin-bottom: 20px; text-align: left;">
+          <label style="
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9a9aa3;
+            display: block;
+            margin-bottom: 8px;
+          ">Password</label>
+          <input
+            type="password"
+            id="passwordDirect"
+            style="
+              width: 100%;
+              padding: 14px 16px;
+              border-radius: 20px;
+              border: 1.5px solid rgba(0,0,0,0.06);
+              background: #fafafc;
+              font-family: 'Inter', sans-serif;
+              font-size: 15px;
+              font-weight: 500;
+              color: #0f0f11;
+              outline: none;
+              box-sizing: border-box;
+            "
+            placeholder="••••••••"
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" style="
+          width: 100%;
+          padding: 16px 24px;
+          border-radius: 50px;
+          border: none;
+          background: #1a1a1e;
+          color: #ffffff;
+          font-family: 'Inter', sans-serif;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          box-shadow: 0 3px 8px rgba(0,0,0,0.07);
+        ">
+          <span>Sign In</span>
+          <span style="font-size:18px;">→</span>
+        </button>
+      </form>
+
+      <div style="
+        margin-top: 28px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #9a9aa3;
+        text-align: center;
+      ">
+        Kitchen Delivery Hub &copy; 2026
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Direct login handler for the forced login
+    function handleLoginDirect(event) {
+      event.preventDefault();
+      // Hide the forced login
+      const overlay = document.getElementById('loginOverlay');
+      overlay.style.display = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
+  </script>
+
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" class="login-visible">
     <div class="login-container">
