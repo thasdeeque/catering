@@ -887,33 +887,27 @@ body {
 }
 
 /* ============================================================
-   LOGIN OVERLAY
+   LOGIN OVERLAY - FORCED VISIBLE
    ============================================================ */
 #loginOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg);
-  padding: 20px;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--bg) !important;
+  padding: 20px !important;
   opacity: 1 !important;
   transform: scale(1) !important;
   pointer-events: auto !important;
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-#loginOverlay.login-visible {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
-}
-
 #loginOverlay.hidden {
-  opacity: 0;
-  transform: scale(0.95);
-  pointer-events: none;
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .login-container {
@@ -2073,6 +2067,46 @@ function aP(id, ev, dur) {
     if (window.navigator.standalone === false) {
       document.body.style.paddingTop = '20px';
     }
+  </script>
+
+  <script>
+  // FORCE LOGIN SCREEN TO SHOW ON GITHUB PAGES
+  (function() {
+    console.log('Force login script running...');
+    
+    function forceShowLogin() {
+      const overlay = document.getElementById('loginOverlay');
+      if (!overlay) {
+        console.log('Login overlay not found!');
+        return;
+      }
+      
+      // Remove any hidden class
+      overlay.classList.remove('hidden');
+      // Ensure it's visible
+      overlay.style.display = 'flex';
+      overlay.style.opacity = '1';
+      overlay.style.transform = 'scale(1)';
+      overlay.style.pointerEvents = 'auto';
+      
+      console.log('Login overlay forced visible. Classes:', overlay.className);
+    }
+    
+    // Run immediately
+    forceShowLogin();
+    
+    // Run again when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', forceShowLogin);
+    }
+    
+    // Run again when everything loads
+    window.addEventListener('load', forceShowLogin);
+    
+    // And again after delays (for good measure)
+    setTimeout(forceShowLogin, 100);
+    setTimeout(forceShowLogin, 500);
+  })();
   </script>
 </body>
 </html>
