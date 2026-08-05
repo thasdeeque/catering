@@ -484,8 +484,32 @@ body {
   color: #fff;
 }
 
-.shop-sub-screen { display: none; }
-.shop-sub-screen.active { display: block; }
+/* Shop panels are stacked in the same grid cell so an invisible panel
+   can never occupy flow height and push the visible one down. Only
+   the panel with .active is interactive within that shared cell; the
+   rest are opacity:0 + pointer-events:none, but never display:none
+   mid-transition, and never take up separate flow space. */
+#screen-shop .shop-panels {
+  display: grid;
+  grid-template-areas: "stack";
+}
+#shop-main,
+.shop-sub-screen {
+  grid-area: stack;
+  min-width: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+  visibility: hidden;
+}
+#shop-main.active,
+.shop-sub-screen.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+}
 .shop-back-btn { width: 36px; height: 36px; border-radius: 50%; background: #e8e8ed; display: flex; align-items: center; justify-content: center; color: var(--text-primary); cursor: pointer; margin-bottom: 20px; }
 .shop-section-title { margin-bottom: 16px; }
 
@@ -874,15 +898,21 @@ body {
   justify-content: center;
   background: var(--bg);
   padding: 20px;
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-#loginOverlay {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+#loginOverlay.login-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
 #loginOverlay.hidden {
   opacity: 0;
-  transform: scale(0.98);
+  transform: scale(0.95);
   pointer-events: none;
 }
 
@@ -1089,7 +1119,7 @@ body {
 <body>
 
   <!-- LOGIN OVERLAY -->
-  <div id="loginOverlay">
+  <div id="loginOverlay" class="login-visible">
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
@@ -1168,8 +1198,9 @@ body {
         showLoginToast('Success! Redirecting...');
         setTimeout(() => {
           const overlay = document.getElementById('loginOverlay');
+          overlay.classList.remove('login-visible');
           overlay.classList.add('hidden');
-          setTimeout(() => { overlay.style.display = 'none'; }, 400);
+          setTimeout(() => { overlay.style.display = 'none'; }, 500);
         }, 600);
       }, 700);
     }
@@ -1325,6 +1356,7 @@ body {
         <div class="header-avatar" style="background:linear-gradient(135deg,#2d2d33 0%,#1a1a1e 100%)"><i data-lucide="shopping-bag" style="width:16px;height:16px"></i></div>
       </header>
 
+      <div class="shop-panels">
       <!-- Shop Main -->
       <div class="shop-sub-screen active" id="shop-main">
         <div class="shop-grid">
@@ -1391,6 +1423,7 @@ body {
         <div class="shop-back-btn" onclick="backToShop()"><i data-lucide="arrow-left" style="width:18px;height:18px"></i></div>
         <div class="shop-section-title">Kitchen Inventory</div>
         <div class="kitchen-list" id="kitchenList"></div>
+      </div>
       </div>
     </div>
 
@@ -1693,11 +1726,23 @@ function cUS() {
 }
 
 // ===== SHOP FUNCTIONS =====
+// All shop panels (#shop-main + .shop-sub-screen) are stacked in one CSS
+// grid cell (see .shop-panels rule). Switching panels is now just a class
+// toggle — no display/timeout races, so an outgoing panel can never sit
+// in flow and push the incoming one down the page.
 function openShopSub(subId) {
-  document.getElementById('shop-main').classList.remove('active');
   const sub = document.getElementById('shop-' + subId);
+
+  // Reset scroll so the sub-screen is anchored at the top, not wherever shop-main had scrolled to
+  const scrollEl = document.getElementById('mainScroll');
+  if (scrollEl) scrollEl.scrollTop = 0;
+
+  document.querySelectorAll('.shop-panels > .shop-sub-screen, .shop-panels > #shop-main')
+    .forEach(s => s.classList.remove('active'));
+
   if (sub) {
     sub.classList.add('active');
+    // Render content if needed
     if (subId === 'stock') renderStockList();
     if (subId === 'kitchen-items') renderKitchenList();
   }
@@ -1705,8 +1750,35 @@ function openShopSub(subId) {
 }
 
 function backToShop() {
-  document.querySelectorAll('.shop-sub-screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('shop-main').classList.add('active');
+  const main = document.getElementById('shop-main');
+
+  // Reset scroll so shop-main is anchored at the top when it reappears
+  const scrollEl = document.getElementById('mainScroll');
+  if (scrollEl) scrollEl.scrollTop = 0;
+
+  document.querySelectorAll('.shop-panels > .shop-sub-screen, .shop-panels > #shop-main')
+    .forEach(s => s.classList.remove('active'));
+  main.classList.add('active');
+  {
+    // Force all shop cards to be visible
+    const shopGrid = main.querySelector('.shop-grid');
+    if (shopGrid) {
+      shopGrid.style.display = 'grid';
+      shopGrid.style.opacity = '1';
+      shopGrid.style.visibility = 'visible';
+    }
+    
+    // Force each shop card to be visible
+    main.querySelectorAll('.shop-card').forEach(card => {
+      card.style.display = 'block';
+      card.style.opacity = '1';
+      card.style.visibility = 'visible';
+    });
+    
+    // Force a reflow
+    void main.offsetWidth;
+  }
+
   // Reset shopping
   document.querySelectorAll('.shopping-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('shoppingOtherInput').classList.remove('show');
@@ -1903,11 +1975,18 @@ function sT(tn) {
   SC.forEach(s => s.classList.remove('active'));
   const t = document.getElementById('screen-' + tn);
   if (t) t.classList.add('active');
-  // Reset shop sub-screens when leaving shop
+  
+  // Reset shop back to its main panel when leaving the Shop tab, so it's
+  // always showing shop-main next time the user opens Shop. Panels are
+  // stacked in one grid cell (see .shop-panels), so this is a pure class
+  // toggle with no layout side effects on the rest of the app.
   if (tn !== 'shop') {
-    document.querySelectorAll('.shop-sub-screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('shop-main').classList.add('active');
+    document.querySelectorAll('.shop-panels > .shop-sub-screen, .shop-panels > #shop-main')
+      .forEach(s => s.classList.remove('active'));
+    const main = document.getElementById('shop-main');
+    if (main) main.classList.add('active');
   }
+  
   if (tn === 'ai') { setTimeout(() => { MS.scrollTo({ top: MS.scrollHeight, behavior: 'smooth' }); CI.focus(); }, 100); }
   else MS.scrollTo({ top: 0, behavior: 'smooth' });
 }
